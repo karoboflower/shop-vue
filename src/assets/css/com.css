@@ -1,0 +1,29 @@
+body{
+    font-size: 16px;
+    margin: 0;
+    background-color: #f2f2f2 !important;
+
+}
+ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.d_start{
+    display: flex;
+    justify-content: flex-start;
+}
+.d_btw{
+    display: flex;
+    justify-content: space-between;
+}
+.d_around{
+    display: flex;
+    justify-content: space-around;
+}
+.add_btn{
+    margin: 20px 30px 30px;
+    padding: 2px 12px !important;
+    background-color: #4db14d !important;
+    color:#fff!important;
+}

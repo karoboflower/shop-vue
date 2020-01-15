@@ -1,0 +1,212 @@
+<template>
+  <div class="title_box">
+    <ul>
+      <li class="item d_start">
+        <span>页面名称</span>
+        <div style="flex:1">
+          <Input v-model="pageName" placeholder="请填写页面名称" />
+          <p>页面名称仅用于后台查找</p>
+        </div>
+      </li>
+      <li class="item d_start">
+        <span>页面标题</span>
+        <div style="flex:1">
+          <Input v-model="pageTitle" placeholder="请填写页面标题" @on-blur="changTitle" />
+          <p>小程序端顶部显示的标题</p>
+        </div>
+      </li>
+      <li class="item d_start">
+        <span>分享标题</span>
+        <div style="flex:1">
+          <Input v-model="shareName" placeholder="请填写分享标题" />
+          <p>小程序端转发时显示的标题</p>
+        </div>
+      </li>
+
+      <li class="title_point">
+        <span>标题颜色</span>
+        <RadioGroup v-model="point" @on-change="changeShape">
+          <Radio label="黑色"></Radio>
+          <Radio label="白色"></Radio>
+        </RadioGroup>
+      </li>
+      <li class="color d_start">
+        <span>标题栏背景</span>
+        <div class="point_color d_around">
+          <span @click="changeColor" class="color_input" ref="color"></span>
+          <span class="color_btn" @click="resetColor">重置</span>
+        </div>
+      </li>
+      <photoshop-picker
+        v-model="colors"
+        v-if="showColor"
+        @input="updateValue"
+        @ok="sure"
+        @cancel="close"
+        class="color_pick"
+      ></photoshop-picker>
+    </ul>
+  </div>
+</template>
+
+<script>
+import { Photoshop } from "vue-color";
+export default {
+  name: "pageTitle",
+  props: {
+    title: {
+      type: String,
+      default: ""
+    },
+    titleData:{
+      type:Object,
+      default:{}
+    }
+  },
+  components: {
+    "photoshop-picker": Photoshop
+  },
+  data() {
+    return {
+      pageTitle: "页面标题",
+      pageName: "页面名称",
+      shareName: "分享名称",
+      styleObject: {
+        height: " 15px",
+        width: "15px",
+        borderRadius: "50%",
+        backgroundColor: " #fff"
+      },
+      showColor: false,
+      colors: {
+        hex: "#fff",
+        hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
+        hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
+        rgba: { r: 25, g: 77, b: 51, a: 1 },
+        a: 1
+      },
+      point: "黑色",
+      choseColor: "#fff"
+    };
+  },
+  created() {
+    this.pageTitle = this.title;
+    this.pageName=this.titleData.page.params.title;
+    this.shareName=this.titleData.page.params.share_title;
+    // console.log("数据",this.titleData.page.style)
+    this.styleObject.backgroundColor=this.titleData.page.style.titleBackgroundColor
+  },
+  methods: {
+    // 改变页面标题
+    changTitle() {
+      this.$emit("changePageTitle", this.pageTitle);
+    },
+    //显示圆点形状
+    changeShape(data) {
+      if (data == "圆形") {
+        this.styleObject.height = "15px";
+        this.styleObject.width = "15px";
+        this.styleObject.borderRadius = "50%";
+        this.$store.commit("incrementSwiperStyleObj", this.styleObject);
+      } else if (data == "正方形") {
+        this.styleObject.height = "15px";
+        this.styleObject.width = "15px";
+        this.styleObject.borderRadius = "0%";
+        this.$store.commit("incrementSwiperStyleObj", this.styleObject);
+      } else if (data == "长方形") {
+        this.styleObject.height = "5px";
+        this.styleObject.width = "30px";
+        this.styleObject.borderRadius = "0%";
+        this.$store.commit("incrementSwiperStyleObj", this.styleObject);
+      }
+    },
+    // 显示颜色版弹框
+    changeColor() {
+      this.showColor = true;
+    },
+    // 颜色版选中颜色
+    updateValue(data) {
+      this.choseColor = data.hex;
+    },
+    // 确定选中颜色
+    sure() {
+      this.$refs.color.style.backgroundColor = this.choseColor;
+      this.showColor = false;
+      this.styleObject.backgroundColor = this.choseColor;
+      this.$store.commit("incrementSwiperStyleObj", this.styleObject);
+    },
+    // 重置颜色
+    resetColor() {
+      this.$refs.color.style.backgroundColor = "#fff";
+      this.styleObject.backgroundColor = "#ffff";
+      this.$store.commit("incrementSwiperStyleObj", this.styleObject);
+    },
+    //关闭颜色板
+    close() {
+      this.showColor = false;
+    }
+  }
+};
+</script>
+<style>
+.title_box {
+  color: #656565;
+  font-weight: inherit;
+  font-size: 14px;
+  margin: 20px;
+}
+.title_box .item {
+  margin: 5px auto;
+}
+.title_box .item .ivu-input-wrapper {
+  width: 80%;
+}
+.title_box .item .ivu-input {
+  border: none;
+  border-bottom: 1px solid #dcdee2;
+  height: 100%;
+  outline: none;
+}
+
+.title_box .item p {
+  font-size: 12px;
+  color: #838fa1;
+  padding: 5px;
+}
+.title_box li span {
+  padding-right: 10px;
+}
+.title_box .title_point {
+  margin: 5px auto;
+}
+.title_box li .point_color {
+  border: 1px solid #efefef;
+  width: 130px;
+  height: 30px;
+  align-items: center;
+}
+.title_box li .point_color .color_input {
+  display: inline-block;
+  border: 1px solid #000;
+  width: 60px;
+  height: 20px;
+  background-color: #fff;
+}
+.title_box li .point_color .color_btn {
+  display: inline-block;
+  width: 50px;
+  border-left: 1px solid #efefef;
+  padding-left: 8px;
+}
+.title_box .color {
+  margin: 20px auto;
+}
+.title_box .color_pick {
+  position: absolute;
+  z-index: 9;
+  left: 50%;
+  transform: translateX(-50%);
+}
+</style>
+
+
