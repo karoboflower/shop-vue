@@ -5,23 +5,23 @@
       <li class="distance d_start">
         <span>上下边距</span>
         <div class="dis_slider">
-          <Slider v-model="value1" @on-input="changTopBot" :tip-format="format1"></Slider>
+          <Slider v-model="paddingTop" @on-input="changStyle" :tip-format="format1"></Slider>
         </div>
-        <div>{{padding1}}px(像素)</div>
+        <div>{{paddingTop/2}}px(像素)</div>
       </li>
       <!-- 左右边距 -->
       <li class="distance d_start">
         <span>左右边距</span>
         <div class="dis_slider">
-          <Slider v-model="value2" @on-input="changLeftRight" :tip-format="format2"></Slider>
+          <Slider v-model="paddingLeft" @on-input="changStyle" :tip-format="format2"></Slider>
         </div>
-        <div>{{padding2}}px(像素)</div>
+        <div>{{paddingLeft/2}}px(像素)</div>
       </li>
       <!-- 背景颜色 -->
       <li class="color d_start">
-        <span>指示点颜色</span>
+        <span>背景颜色</span>
         <div class="point_color d_around">
-          <span @click="changeColor" class="color_input" ref="color"></span>
+          <span @click="changeColor" class="color_input" :style="currentStyle"></span>
           <span class="color_btn" @click="resetColor">重置</span>
         </div>
       </li>
@@ -35,24 +35,27 @@
       ></photoshop-picker>
 
       <li class="photo_items">
-        <div class="photo_item" v-for="(item,index) of data" :key="index">
+        <div class="photo_item" v-for="(item,index) of imgList" :key="index">
           <div class="img_box d_start">
             <span>图片</span>
             <div>
-              <img :src="item.url" alt @click="changeImg(index)" />
+              <img
+                :src="item.img?item.img:defaultImgUrl"
+                alt
+                @click="changeImg(index)"
+              />
               <p>建议尺寸750X360</p>
             </div>
           </div>
           <div class="img_link d_start">
             <span>链接地址</span>
-            <Input type="text" :value="item.url" />
+            <Input type="text" :value="item.linkUrl" @on-blur="changeLinkUrl($event,index)" />
           </div>
           <i class="iconfont icon-web-icon- wrong" @click="downImg(index)"></i>
         </div>
       </li>
       <Button style="width: 100%;" @click="addImg">添加一个</Button>
     </ul>
-    <photo-gallery v-if="photoShow" @sure="sureGallery" @close="closeGallery"></photo-gallery>
   </div>
 </template>
 
@@ -65,122 +68,147 @@ export default {
     "photoshop-picker": Photoshop
   },
   props: {
-    data: {
-      type: Array,
-      default: []
+    defaultData: {
+      type: Object,
+      default: {}
     }
   },
-  data() {
+  data () {
     return {
-      changeImgIndex: -1, //记录更换图片下标
+      defaultImgUrl: require("../../../assets/images/defaultImg.png"),
       photoShow: false,
-      styleObj: {
-        backgroundColor: "#fff",
-        paddingTop: "0",
-        paddingBottom: "0",
-        paddingLeft: "0",
-        paddingRight: "0"
-      },
-      value1: 0,
-      value2: 0,
-      padding1: 0,
-      padding2: 0,
       showColor: false,
-      format1(val) {
+      format1 (val) {
         return val + "%";
       },
-      format2(val) {
+      format2 (val) {
         return val + "%";
       },
       colors: {
-        choseColor: "#fff",
         hex: "#fff",
         hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
         hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
         rgba: { r: 25, g: 77, b: 51, a: 1 },
         a: 1
-      }
+      },
     };
   },
-  watch: {
-    data(oldVal, newVal) {
-      console.log("newVal", newVal);
-      console.log("oldVal", oldVal);
+  computed: {
+    currentStyle: function () {
+      return {
+        backgroundColor: this.choseColor
+      }
+    },
+    choseColor: {
+      get: function () {
+        return this.defaultData.style.background;
+      },
+      set: function (val) {
+        this.defaultData.style.background = val;
+      }
+    },
+    imgList: {
+      get: function () {
+        return this.defaultData.data;
+      },
+      set: function (val) {
+        this.defaultData.data = val;
+      }
+    },
+    paddingTop: {
+      get: function () {
+        return this.defaultData.style.paddingTop * 2;
+      },
+      set: function (val) {
+        this.defaultData.style.paddingTop = val / 2;
+      }
+    },
+    paddingLeft: {
+      get: function () {
+        return this.defaultData.style.paddingLeft * 2;
+      },
+      set: function (val) {
+        this.defaultData.style.paddingLeft = val / 2;
+      }
     }
   },
   methods: {
-    //图片库"确定"触发
-    sureGallery(val) {
-      this.data[this.changeImgIndex].url = val;
-      this.photoShow = false;
-    },
-    //图片库"取消"触发
-    closeGallery() {
-      this.photoShow = false;
-    },
     //上传图片
-    changeImg(index) {
-        debugger
-      this.changeImgIndex = index;
-      this.photoShow = true;
+    changeImg (index) {
+      let _this = this
+      _this.isShowModel = true
+      window.windowphotoGallery.show({
+        isShowModel: _this.isShowModel,
+        onConfirm: function (data) {
+          _this.imgList[index].img = data[0].fileUrl;
+          _this.changeData();
+        }
+      })
     },
     //减少图片
-    downImg(i) {
-      if (this.data.length == 1) {
+    downImg (i) {
+      if (this.imgList.length == 1) {
         this.$Message.info("至少保留一个");
       } else {
-        this.data.splice(i, 1);
+        this.imgList.splice(i, 1);
       }
-      this.$emit("changePhoto", this.data);
+      this.changeData();
     },
     //添加图片
-    addImg() {
+    addImg () {
       var data = {
-        url: "https://demo.yiovo.com/assets/store/img/diy/banner/01.png",
-        link: ""
+        linkUrl: "",
+        img: ""
       };
-      this.data.push(data);
-      this.$emit("changePhoto", this.data);
+      this.imgList.push(data);
+      this.changeData();
     },
     // 显示颜色版弹框
-    changeColor() {
+    changeColor () {
       this.showColor = true;
     },
     // 颜色版选中颜色
-    updateValue(data) {
+    updateValue (data) {
       this.choseColor = data.hex;
     },
     // 确定提交选中颜色
-    sure() {
-      this.$refs.color.style.backgroundColor = this.choseColor;
-      this.styleObj.backgroundColor = this.choseColor;
-      this.$store.commit("incrementPhotoStyleObj", this.styleObj);
+    sure () {
       this.showColor = false;
+      this.changStyle();
     },
     //关闭颜色版
-    close() {
+    close () {
       this.showColor = false;
     },
     // 重置组件颜色
-    resetColor() {
-      this.$refs.color.style.backgroundColor = "#fff";
-      this.styleObj.backgroundColor = "#ffff";
-      this.$store.commit("incrementPhotoStyleObj", this.styleObj);
+    resetColor () {
+      this.choseColor = "#fff";
+      this.changStyle();
     },
-    // 改变上下边距
-    changTopBot(data) {
-      this.padding1 = parseInt(data / 2);
-      this.styleObj.paddingBottom = this.padding1 + "px";
-      this.styleObj.paddingTop = this.padding1 + "px";
-      this.$store.commit("incrementPhotoStyleObj", this.styleObj);
+    changStyle (data) {
+      this.$store.commit("incrementCompListItem", {
+        type: 'style',
+        value: {background: this.choseColor, paddingLeft: this.paddingLeft / 2, paddingTop: this.paddingTop / 2}      
+        });
     },
-    changLeftRight(data) {
-      this.padding2 = parseInt(data / 2);
-      this.styleObj.paddingLeft = this.padding2 + "px";
-      this.styleObj.paddingRight = this.padding2 + "px";
-      this.$store.commit("incrementPhotoStyleObj", this.styleObj);
-    }
-  }
+    changeLinkUrl (e, index) {
+      let _value = e.target.value;
+      this.imgList[index].linkUrl = _value;
+      this.changeData();
+    },
+    changeData () {
+      this.$store.commit("incrementCompListItem", {
+        type: 'data',
+        value: this.imgList
+      });
+       this.$store.commit("incrementCompListItem", {
+        type: 'dataNum',
+        value: this.imgList.length
+      });
+      
+    },
+  },
+
 };
 </script>
 <style>

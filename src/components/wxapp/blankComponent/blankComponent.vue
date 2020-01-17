@@ -1,7 +1,6 @@
 <template>
   <div class="blank_com_box">
-    <div :style="styleObject"></div>
-    <slot name="del"></slot>
+    <div :style="blankStyleObj"></div>
   </div>
 </template>
 <script>
@@ -9,26 +8,24 @@ export default {
   name: "blankComponent",
   data() {
     return {
-      styleObject: {
-        height: "20px",
-        backgroundColor: "#fff"
-      }
+      
     };
+  },
+    props: {
+    defaultData: {
+      type: Object,
+      default: {}
+    }
   },
   computed: {
     blankStyleObj() {
-      return this.$store.state.blankStyleObj;
+     let defaultStyle = this.defaultData.style;
+      return {
+        backgroundColor: defaultStyle.background,
+        height:defaultStyle.height+"px"
+      }
     }
   },
-
-  watch: {
-    blankStyleObj(newVal) {
-      console.log('newVal',newVal)
-
-      this.styleObject = newVal;
-      console.log('styleObject',this.styleObject)
-    }
-  }
 };
 </script>
 

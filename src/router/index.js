@@ -7,8 +7,11 @@ import login from '@/views/login/loginRouter'
 Vue.use(Router)
 
 export default new Router({
+  //mode: 'history',  //去掉url中的#
   routes: [
-    { path: '/', redirect: { name: 'home' } },
+    { path: '/', 
+    redirect: { name: 'home' }   
+ },
     home,login
   ],
   

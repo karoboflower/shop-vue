@@ -9,29 +9,25 @@
     <Table :columns="columns" :data="roleList" stripe></Table>
     <div style="margin: 10px;overflow: hidden">
       <div style="float: right;">
-        <Page :total="100" :current="1" @on-change="changePage"></Page>
+        <Page :total="dataTotal" :current="dataCurrent" @on-change="changePage"></Page>
       </div>
     </div>
   </div>
 </template>
 <script>
-import roleService from "../../../service/user/roleService";
+import roleService from "../../../service/user/userService";
 export default {
   name: "roleManager",
   data() {
     return {
       columns: [
         {
-          title: "角色ID",
-          key: "deliveryId"
+          title: "菜单名称",
+          key: "pname"
         },
         {
-          title: "角色名称",
-          key: "name"
-        },
-        {
-          title: "排序",
-          key: "sort"
+          title: "菜单相对地址",
+          key: "purl"
         },
         {
           title: "添加时间",
@@ -75,23 +71,38 @@ export default {
                   }
                 },
                 "删除"
+              ),
+                h(
+                "Button",
+                {
+                  props: {
+                    type: "error",
+                    size: "small"
+                  },
+                  on: {
+                    click: () => {
+                      this.remove(params);
+                    }
+                  }
+                },
+                "权限人员"
               )
             ]);
           }
         }
       ],
-      roleList: []
+      roleList: [],
+      dataTotal: 0,
+      dataCurrent: 1,//当前页,
     };
   },
   created() {
-    // roleService.getRoleList().then(res => {
-    //   if (res.code == 0) {
-    //     console.log("res", res);
-    //   } else {
-    //     this.$Message.info("登录超时请重新登录");
-    //     this.$router.push("/login");
-    //   }
-    // });
+    roleService.getRoleList().then(res => {
+      if (res.code == 0) {
+        console.log("res", res);
+      } else {
+      }
+    });
   },
   methods: {
     // 编辑模板

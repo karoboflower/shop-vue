@@ -17,6 +17,14 @@ class homeService {
             })
         })
     }
+        //权限列表
+        getPowerList (params) {
+            return new Promise(resolve => {
+                request.get('/sysperm/tree', params).then(res => {
+                    resolve(res.data)
+                })
+            })
+        }
     
 }
 

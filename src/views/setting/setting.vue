@@ -1,7 +1,6 @@
 <template>
     <div class="d_start setting_warpper">
-      <!-- 左边菜单栏 -->
-      <page-menu :tabList="tabList" :tabTitle="tabTitle" @goto="goPage"></page-menu>
+   
       <!-- 右边内容 -->
       <div class="setting_cnt">
         <div class="setting_mould">
@@ -17,34 +16,9 @@ export default {
   data() {
     return {
       tabTitle: "设置",
-      tabList: [
-        {
-          name: "商场设置",
-          router: "/storeSetting"
-        },
-        {
-          name: "交易设置",
-          router: "/paySetting"
-        },
-        {
-          name: "配送设置",
-          router: "/sendSetting"
-        },
-        {
-          name: "短信通知",
-          router: "/inforSetting"
-        },
-        {
-          name: "上传设置",
-          router: "/upSetting"
-        }
-      ]
     };
   },
   methods:{
-    goPage(val){
-      this.$router.push(val)
-    }
   }
 };
 </script>

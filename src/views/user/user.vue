@@ -1,24 +1,11 @@
 <template>
-  <div class="d_start user_warpper">
-    <!-- 左边菜单栏 -->
-    <div class="page_menu_box">
-      <div class="page_menu_title">{{tabTitle}}</div>
-      <ul>
-        <li
-          v-for="(item,index) of tabList"
-          :key="index"
-          :class="activeI==index ?'page_menu_active':''"
-          @click="changeTab(index,item.router)"
-        >{{item.name}}</li>
-      </ul>
-    </div>
+ 
     <!-- 右边内容 -->
     <div class="user_cnt">
       <div class="user_mould">
         <router-view></router-view>
       </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -28,24 +15,11 @@ export default {
     return {
       activeI: 0,
       tabTitle: "管理员",
-      tabList: [
-        {
-          name: "管理员列表",
-          router: "/admin"
-        },
-        {
-          name: "角色管理",
-          router: "/roleManager"
-        }
-      ]
+
     };
   },
   methods: {
     // 改变默认选中
-    changeTab(i, path) {
-      this.activeI = i;
-      this.$router.push(path);
-    }
   }
 };
 </script>

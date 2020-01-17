@@ -1,16 +1,15 @@
 <template>
   <div class="goods_com_box">
-    <div class="d_start goods_com_cnt" :style="bg">
-      <div v-for="(item,index) of data" :key="index" class="goods_item" :style="styleObject">
-        <img :src="item.url" alt />
-        <p class="goods_name">{{item.name}}</p>
+    <div class=" goods_com_cnt" :style="bg">
+      <div v-for="(item,index) of imglist" :key="index" class="goods_item" :style="styleObject">
+        <img :src="item.img?item.img:item.src" alt />
+        <p class="goods_name" v-show="showName">{{item.name}}</p>
         <p class="goods_price">
-          <span>{{item.nowPrice}}.00</span>
-          <span>{{item.price}}.00</span>
+          <span  v-show="showPrice">{{item.price }}.00</span>
+          <span  v-show="showLinePrice">{{item.linePrice}}.00</span>
         </p>
       </div>
     </div>
-    <slot name="del"></slot>
   </div>
 </template>
 
@@ -18,39 +17,70 @@
 export default {
   name: "goodsComponent",
   props: {
-    data: {
-      type: Array,
-      default: []
+    defaultData: {
+      type: Object,
+      default: {}
     }
   },
-  data() {
+  data () {
     return {
-      styleObject: {
-        backgroundColor: "	#F5F5F5",
-        width:'46%'
-
-      },
-      bg: {
-        backgroundColor: " 	#F5F5F5"
-      },
+      defaultList: [{
+        src: require("../../../assets/images/defaultImg.png"),
+        name: "此处显示商品名称",
+        price: "99",
+        linePrice: "139"
+      }, {
+        src: require("../../../assets/images/defaultImg.png"),
+        name: "此处显示商品名称",
+        price: "99",
+        linePrice: "139"
+      }, {
+        src: require("../../../assets/images/defaultImg.png"),
+        name: "此处显示商品名称",
+        price: "99",
+        linePrice: "139"
+      }, {
+        src: require("../../../assets/images/defaultImg.png"),
+        name: "此处显示商品名称",
+        price: "99",
+        linePrice: "139"
+      }]
     };
   },
-   computed: {
-    goodsStyleObj() {
-      return this.$store.state.goodsStyleObj;
+  computed: {
+    styleObject () {
+      let defaultStyle = this.defaultData.style;
+      return {
+        width: defaultStyle.column === "2" ? '48%' : defaultStyle.column === "3" ? '31%' : '98%',
+      }
+    },
+    imglist () {
+      if (this.defaultData.params.source === "choice") {//手动选择
+        return this.defaultData.data
+      } else {
+        return this.defaultList;
+      }
+
+    },
+    bg () {
+      let defaultStyle = this.defaultData.style;
+      return {
+        backgroundColor: defaultStyle.background,
+        whiteSpace: defaultStyle.display === "slide" ? 'nowrap' : 'normal',
+        overflowX: defaultStyle.display === "slide" ? 'hidden' : 'visible',
+      }
+    },
+    showName () {
+      return this.defaultData.style.show.goodsName
+    },
+    showPrice () {
+      return this.defaultData.style.show.goodsPrice
+    },
+    showLinePrice () {
+      return this.defaultData.style.show.linePrice
     }
   },
 
-  watch: {
-    goodsStyleObj(newVal) {
-      this.styleObject = newVal;
-      this.bg.backgroundColor=newVal.backgroundColor;
-      this.styleObject.backgroundColor='#fff';
-
-    },
-   
-  },
- 
 };
 </script>
 
@@ -58,13 +88,14 @@ export default {
 .goods_com_box {
   position: relative;
 }
-.goods_com_box .goods_com_cnt {
+/* .goods_com_box .goods_com_cnt {
   flex-wrap: wrap;
-}
+} */
 .goods_com_box .goods_com_cnt .goods_item {
-  margin: 5px 2%;
+  margin: 1%;
   box-sizing: border-box;
   background-color: #fff;
+  display: inline-block;
 }
 .goods_com_box .goods_com_cnt .goods_item img {
   /* height: 160px;

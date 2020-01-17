@@ -5,7 +5,7 @@
       <li class="color d_start">
         <span>背景颜色</span>
         <div class="point_color d_around">
-          <span @click="changeColor" class="color_input" ref="color"></span>
+          <span @click="changeColor" class="color_input" :style="currentStyle"></span>
           <span class="color_btn" @click="resetColor">重置</span>
         </div>
       </li>
@@ -21,9 +21,9 @@
       <li class="distance d_start">
         <span>组件高度</span>
         <div class="dis_slider">
-          <Slider v-model="value" @on-input="changHeight" :tip-format="format"></Slider>
+          <Slider v-model="value1" @on-input="changHeight" :tip-format="format"></Slider>
         </div>
-        <div>{{height}}px(像素)</div>
+        <div>{{value1*2}}px(像素)</div>
       </li>
     </ul>
   </div>
@@ -37,21 +37,20 @@ export default {
   components: {
     "photoshop-picker": Photoshop
   },
-
-  data() {
+ 
+  props: {
+    defaultData: {
+      type: Object,
+      default: {}
+    }
+  },
+  data () {
     return {
-      styleObject: {
-        height: "20px",
-        backgroundColor: "#fff"
-      },
-      value: 20,
-      height:20,
       showColor: false,
-      format(val) {
+      format (val) {
         return val + "%";
       },
       colors: {
-        choseColor: "#fff",
         hex: "#fff",
         hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
         hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
@@ -60,38 +59,63 @@ export default {
       }
     };
   },
+   computed: {
+    currentStyle: function () {
+      return {
+        backgroundColor: this.choseColor
+      }
+    },
+    choseColor: {
+      get: function () {
+        return this.defaultData.style.background;
+      },
+      set: function (val) {
+        this.defaultData.style.background = val;
+      }
+    },
+    value1: {
+      get: function () {
+        return this.defaultData.style.height / 2;
+      },
+      set: function (val) {
+        this.defaultData.style.height = val * 2;
+      }
+    },
+  },
   methods: {
     // 显示颜色版弹框
-    changeColor() {
+    changeColor () {
       this.showColor = true;
     },
     // 颜色版选中颜色
-    updateValue(data) {
+    updateValue (data) {
       this.choseColor = data.hex;
     },
     // 确定提交选中颜色
-    sure() {
-      this.$refs.color.style.backgroundColor = this.choseColor;
-      this.styleObject.backgroundColor = this.choseColor;
-      this.$store.commit("incrementBlankStyleObj", this.styleObject);
+    sure () {
       this.showColor = false;
+      this.changHeight();
     },
     //关闭颜色版
-    close() {
+    close () {
       this.showColor = false;
     },
     // 重置组件颜色
-    resetColor() {
-      this.$refs.color.style.backgroundColor = "#fff";
-      this.styleObject.backgroundColor = "#ffff";
-      this.$store.commit("incrementBlankStyleObj", this.styleObject);
+    resetColor () {
+      this.choseColor = "#fff";
+      this.changHeight();
     },
     // 改变高度
-    changHeight(data) {
-      this.height = parseInt(data * 2);
-      this.styleObject.height = this.height + "px";
-      this.$store.commit("incrementBlankStyleObj", this.styleObject);
-    }
+    changHeight (data) {
+      this.$store.commit("incrementCompListItem", {
+        type: 'style',
+        value: {
+          background: this.choseColor,
+          height: this.value1 * 2,
+        }
+      });
+    },
+
   }
 };
 </script>

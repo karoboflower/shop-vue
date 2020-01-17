@@ -1,6 +1,6 @@
 <template>
   <div style="position: relative;" class="photo-gallery">
-    <Modal :value="ShowModel" :width="width" title="图片库" @on-ok="ok" @on-cancel="cancel" :z-index="10010">
+    <Modal :value="ShowModel" :width="width" title="图片库" @on-ok="ok" @on-cancel="cancel">
       <div class="content">
         <div class="left">
           <ul>
@@ -15,13 +15,23 @@
               @mouseleave="leave(index)"
               :class="[activeI==index ?'active':'']"
             >
-              <i class="iconfont icon-edit" v-show="editShowI==index" @click="editGroup('update',item.groupName)"></i>
+              <Icon
+                type="md-create"
+                class="edit-icon"
+                v-show="editShowI==index"
+                @click="editGroup('update',item.groupName)"
+              />
               <span>{{item.groupName}}</span>
-              <i
-                class="iconfont icon-add"
+              <Icon
+                type="ios-close-circle"
+                class="delete-icon"
                 v-show="editShowI==index"
                 @click="delGroup(item.groupId)"
-              ></i>
+              />
+              <!-- <i
+                class="iconfont icon-add"
+              
+              ></i>-->
             </li>
             <li @click="editGroup('new')">新增分组</li>
           </ul>
@@ -62,12 +72,15 @@
           <div class="right-file">
             <ul>
               <li v-for="(item,index) of imgList" :key="item.fileId" @click="chooseImg(index,item)">
-                <img :src="'/file/show/'+item.fileId" width="120" height="140" />
+                <img :src="item.fileUrl" width="120" height="140" />
                 <div class="select-mask" v-show="item.checked">
                   <i class="iconfont icon-dagou"></i>
                 </div>
               </li>
             </ul>
+            <div style="float:right">
+              <Page :total="dataTotal" :current="dataCurrent" @on-change="changePage"></Page>
+            </div>
           </div>
         </div>
       </div>
@@ -76,7 +89,7 @@
         <div>加载中</div>
       </Spin>
     </Modal>
-    <Modal v-model="setGroup" :title="groupName" @on-ok="editGroupOk" width="300" :z-index="1000000">
+    <Modal v-model="setGroup" :title="groupName" @on-ok="editGroupOk" width="300">
       <Input v-model="currentGroupName" placeholder />
     </Modal>
   </div>
@@ -107,19 +120,34 @@ export default {
       imgList: [],
       editId: '', //当前编辑id
       editShowI: -1, //编辑和删除图标显示/隐藏
-      isLoad: false
+      isLoad: false,
+      dataTotal: 0,
+      dataCurrent: 1,
     };
   },
-  props:{
-       showModel: {
-        type: Boolean,
-        default: false
-      }
+  props: {
+    showModel: {
+      type: Boolean,
+      default: false
+    }
   },
   methods: {
     ok () {
+        let map=new Map();
+        let params=[];
       if (this.chooseImgs && this.chooseImgs.length) {
-        this.$emit('sure', this.chooseImgs)
+          for(let i=0;i<this.imgList.length;i++){
+              map.set(this.imgList[i].fileId,this.imgList[i].fileUrl);
+          }
+          for(let i=0;i<this.chooseImgs.length;i++){
+              if(map.has(this.chooseImgs[i])){
+                  params.push({
+                      fileId:this.chooseImgs[i],
+                      fileUrl:map.get(this.chooseImgs[i])
+                  })
+              }
+          }
+        this.$emit('sure', params)
       } else {
         this.$Message.info("请选择图片");
         return false;
@@ -142,7 +170,7 @@ export default {
       });
     },
     getData () {
-      var params = { current: 1, size: "32" };
+      var params = { current: this.dataCurrent, size: "32" };
       this.getGroupImgApi(params);
     },
     //获取分组图片内容
@@ -152,13 +180,14 @@ export default {
       photoGalleryService.getImg(params).then(res => {
         _this.isLoad = false
         if (res.code == 0) {
+          _this.dataTotal = res.data.total;
           _this.imgList = res.data.records;
           _this.imgList.forEach(function (item, index) {
             _this.$set(item, 'checked', false)
           })
         } else {
-          this.$Message.info("登录超时请重新登录");
-          this.$router.push("/login");
+          this.$Message.info("获取内容失败");
+          return false;
         }
       });
     },
@@ -169,7 +198,8 @@ export default {
         this.imgList.push({
           fileId: data.data.fileId,
           groupId: data.data.groupId,
-          checked:false
+          checked: false,
+          fileUrl:data.data.fileUrl
         })
 
       } else {
@@ -177,16 +207,16 @@ export default {
       }
     },
     chooseImg (index, item) {
-      let _this=this
+      let _this = this
       item.checked = !item.checked
       if (item.checked) {
         _this.chooseImgs.push(item.fileId)
-      }else{
-          for(let i=0;i<_this.chooseImgs.length;i++){
-              if(_this.chooseImgs[i]===item.fileId){
-                  _this.chooseImgs.splice(i,1)
-              }
+      } else {
+        for (let i = 0; i < _this.chooseImgs.length; i++) {
+          if (_this.chooseImgs[i] === item.fileId) {
+            _this.chooseImgs.splice(i, 1)
           }
+        }
       }
     },
     //编辑和删除图标显示/隐藏
@@ -203,7 +233,7 @@ export default {
       } else {
         this.editId = groupId
       }
-      var params = { groupId: groupId, current: 1, size: "32" };
+      var params = { groupId: groupId, current: this.dataCurrent, size: "32" };
       this.getGroupImgApi(params);
     },
 
@@ -217,7 +247,7 @@ export default {
             fileId: item
           })
         })
-        let data = { groupId: this.editId, current: 1, size: "32" };
+        let data = { groupId: this.editId, current: this.dataCurrent, size: "32" };
         this.$Modal.confirm({
           title: "友情提示",
           content: "<p>确定移动所选文件？</p>",
@@ -239,7 +269,7 @@ export default {
     delImgHandle () {
       let _this = this;
       let fileids = _this.chooseImgs.join(',');
-      let params = { groupId: _this.editId, current: 1, size: "32" };
+      let params = { groupId: _this.editId, current: this.dataCurrent, size: "32" };
       this.$Modal.confirm({
         title: "友情提示",
         content: "<p>确定删除所选文件？</p>",
@@ -254,13 +284,13 @@ export default {
         }
       });
     },
-    editGroup (type,name) {
+    editGroup (type, name) {
       this.setGroup = true
       this.setGroupType = type
-    
+
       if (type === "update") {
         this.groupName = "修改分组名称"
-          this.currentGroupName=name
+        this.currentGroupName = name
       } else {
         this.groupName = "请输入新分组名称"
       }
@@ -301,7 +331,7 @@ export default {
         _this.isLoad = false
         if (res.code == 0) {
           _this.getList();
-           _this.currentGroupName = ''
+          _this.currentGroupName = ''
         } else {
           this.$Message.info("登录超时请重新登录");
           this.$router.push("/login");
@@ -323,11 +353,17 @@ export default {
         }
       });
     },
+    //改变页码
+    changePage (item) {
+      this.dataCurrent = item;
+      var params = { current: this.dataCurrent, size: "32" };
+      this.getGroupImgApi(params);
+    },
   },
   computed: {
-     ShowModel: function () {
-       return this.isShowModel
-     },
+    ShowModel: function () {
+      return this.isShowModel
+    },
     uploadData: function () {
       return {
         groupId: this.editId ? this.editId : '1'
@@ -379,20 +415,26 @@ export default {
 .content .left li .iconfont {
   position: absolute;
 }
-.icon-edit {
-  left: 0;
+.content .edit-icon,
+.content .delete-icon {
   color: #0e90d2;
+  position: absolute;
+  top: 15px;
 }
-.icon-add {
-  right: 0;
-  color: #0e90d2;
+.content .edit-icon {
+  left: 0;
+}
+.content .delete-icon {
+  right: 2px;
+}
+.right-file {
+  overflow: auto;
+  height: 380px;
 }
 .right-file ul {
   display: flex;
   justify-content: flex-start;
   flex-wrap: wrap;
-  height: 380px;
-  overflow: auto;
   margin: 5px 0px;
 }
 .right-file ul li {
@@ -423,7 +465,6 @@ export default {
   font-size: 70px;
   color: #fff;
 }
-
 </style>
 
 

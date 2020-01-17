@@ -18,12 +18,18 @@
           <Button type="primary" @click="changeImg">
             <i class="iconfont icon-add"></i> 选择图片
           </Button>
-          <small>尺寸750x750像素以上，大小2M以下 (可拖拽图片调整显示顺序 )</small>
+          <small>尺寸750x750像素以上，大小2M以下 (可拖拽图片调整显示顺序 ) </small>
           <br />
+  <vuedraggable
+            :list="formItem.goodsUploadFiles"
+            class="dragArea"
+            :options="{animation: 120, filter: '.drag__nomove' }"
+          >
           <div v-for="(item,index) in formItem.goodsUploadFiles" :key="item.fileId" class="photos-list">
-            <img :src="'/file/show/'+item.fileId" width="120" height="140" />
+            <img :src="item.fileUrl" width="120" height="140" />
             <Icon type="ios-close-circle" @click="deletePhoto(index)" />
           </div>
+  </vuedraggable>
         </FormItem>
         <div class="header">
           <div class="item_title">规格/库存</div>
@@ -100,6 +106,7 @@
 <script>
 import freightService from "../../../service/goods/goodsService"
 import goodsSpec from '@/components/common/goodsSpec'
+import vuedraggable from 'vuedraggable';
 export default {
   name: "goodsAdd",
   data () {
@@ -186,7 +193,8 @@ export default {
           _this.formItem.goodsUploadFiles = []
           for (let i = 0; i < data.length; i++) {
             _this.formItem.goodsUploadFiles.push({
-              fileId: data[i]
+              fileId: data[i].fileId,
+              fileUrl:data[i].fileUrl
             })
           }
 
@@ -241,7 +249,7 @@ export default {
         this.$router.push(name)
     }
   },
-  components: {    goodsSpec
+  components: {    goodsSpec,   vuedraggable
   }
 };
 </script>

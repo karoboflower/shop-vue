@@ -9,12 +9,16 @@
     <Modal
       v-model="modal1"
       title="友情提示"
-      @on-ok="ok1"
-      @on-cancel="cancel1"
-      cancel-text="直接删除"
-      ok-text="先转移分类下的商品"
-    >直接删除会删除分类下的商品，建议先转移该分类下的商品？</Modal>
-    <Modal v-model="modal2" title="转移商品至其他分类" @on-ok="ok2" :closable="false">
+      @on-ok="cancel1"
+      @on-cancel="cancel"
+      cancel-text="取消"
+      ok-text="直接删除"
+    >直接删除会删除分类下的商品，建议先转移该分类下的商品？
+     <Button type="primary"  @click="ok1">
+       先转移分类下的商品 
+      </Button>
+    </Modal>
+    <Modal v-model="modal2" title="转移商品至其他分类" @on-ok="ok2()" :closable="false">
       <Select style="width:200px" v-model="newTypeId">
         <Option v-for="item in newTypes" :value="item.id" :key="item.id">{{ item.name }}</Option>
       </Select>
@@ -25,7 +29,7 @@
 import freightService from "../../../service/goods/goodsService";
 export default {
   name: "goodsKind",
-  data() {
+  data () {
     return {
       columns1: [
         {
@@ -35,13 +39,13 @@ export default {
         {
           title: "分类名称",
           key: "name",
-          render:(h,params)=>{
-              if(params.row.type===2){
-                   return h("span",'--'+params.row.name)
-              }else{
-                  return h("span",params.row.name)
-              }
-             
+          render: (h, params) => {
+            if (params.row.type === 2) {
+              return h("span", '--' + params.row.name)
+            } else {
+              return h("span", params.row.name)
+            }
+
           }
 
         },
@@ -104,11 +108,11 @@ export default {
       newTypeId: ""
     };
   },
-  created() {
+  created () {
     this.getInfo();
   },
   methods: {
-    getInfo() {
+    getInfo () {
       var _this = this;
       freightService.getTypes().then(res => {
         if (res.code === 0) {
@@ -117,11 +121,11 @@ export default {
         }
       });
     },
-    typesAdd() {
+    typesAdd () {
       this.$router.push("/goodsKindSet");
     },
     // 编辑
-    edit(val) {
+    edit (val) {
       this.$router.push({
         path: "/goodsKindSet",
         query: {
@@ -130,12 +134,12 @@ export default {
       });
     },
     // 删除
-    remove(id, index) {
+    remove (id, index) {
       let _this = this;
       freightService.getTypes().then(res => {
         if (res.code === 0) {
           var typeId = _this.renderAgain(res.data);
-          _this.newTypes=typeId;
+          _this.newTypes = typeId;
           var type = [];
           for (var i = 0; i < typeId.length; i++) {
             if (id === typeId[i].parentId) {
@@ -147,14 +151,16 @@ export default {
                 id: typeId[i].id,
                 name: typeId[i].name
               });
-              _this.modal1 = true;
+                _this.modal1 = true;
               _this.deleteId = id;
+          
+
             }
           }
         }
       });
     },
-    renderAgain(result) {
+    renderAgain (result) {
       let rowDatas = [];
       for (var i = 0; i < result.length; i++) {
         rowDatas.push({
@@ -164,7 +170,7 @@ export default {
           parentId: result[i].parentId,
           sort: result[i].sort,
           createTime: result[i].createTime,
-          type:1
+          type: 1
         });
         if (result[i].children && result[i].children.length) {
           var childrens = result[i].children;
@@ -176,28 +182,32 @@ export default {
               parentId: childrens[j].parentId,
               sort: childrens[j].sort,
               createTime: childrens[j].createTime,
-              type:2
+              type: 2
             });
           }
         }
       }
       return rowDatas;
     },
-    ok1() {
-      this.modal1 = false;
+    ok1 () {
+      this.modal1=false;
       this.modal2 = true;
     },
-    cancel1() {
+    cancel(){
+        this.modal1=false;
+    },
+    cancel1 () {
       let _this = this;
-      freightService.deleteTypes(_this.deleteId, -1).then(function(res) {
+      freightService.deleteTypes(_this.deleteId, -1).then(function (res) {
         _this.$Message.info("删除成功");
         _this.getInfo();
       })();
     },
-    ok2() {
+    ok2 () {
       let _this = this;
-      freightService.deleteTypes(_this.deleteId, _this.newTypeId).then(function(res) {
+      freightService.deleteTypes(_this.deleteId, _this.newTypeId).then(function (res) {
         _this.$Message.info("删除成功");
+        
         _this.getInfo();
       });
     }

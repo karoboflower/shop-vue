@@ -3,43 +3,37 @@
     <div class="line">
       <div class="position_bor" :style="styleObject"></div>
     </div>
-    <slot name="del"></slot>
   </div>
 </template>
 <script>
 export default {
   name: "auxiliarlineComponent",
-  data() {
+  data () {
     return {
-      styleObject: {
-        borderBottomWidth: "1px",
-        borderBottomStyle: "solid",
-        borderBottomColor: "#000",
-        marginTop: "10px",
-        marginBottom: "10px",
-        backgroundColor: "#fff"
-      },
-      bg: {
-        backgroundColor: "#fff"
-      }
+
     };
   },
   computed: {
-    auxiliarlineStyleObj() {
-      return this.$store.state.auxiliarlineStyleObj;
+    styleObject () {
+      let defaultStyle = this.defaultData.style;
+      return {
+        borderBottomWidth: defaultStyle.lineHeight + "px",
+        borderBottomStyle: defaultStyle.lineStyle,
+        borderBottomColor: defaultStyle.lineColor,
+        marginTop: defaultStyle.paddingTop+"px",
+        marginBottom: defaultStyle.paddingTop+"px",
+      }
+    },
+    bg() {
+      return {backgroundColor: this.defaultData.style.background}
     }
   },
-
-  watch: {
-    auxiliarlineStyleObj(newVal) {
-      this.styleObject = newVal;
-      console.log('背景色',newVal.backgroundColor)
-       var obj={
-        backgroundColor:newVal.backgroundColor
-      }
-      this.bg=obj;
+    props: {
+    defaultData: {
+      type: Object,
+      default: {}
     }
-  }
+  },
 };
 </script>
 

@@ -2,7 +2,7 @@
   <div ref="test">
     <ul class="sipwer_compon">
       <li>
-        <img :src="list[0].linkUrl" alt />
+        <img :src="list[0].img?list[0].img:defaultImgUrl" alt />
       </li>
       <div class="point">
         <div v-for="(item,index) of list" :key="index" class="point_item" :style="styleObject"></div>
@@ -25,6 +25,7 @@ export default {
   data () {
     return {
       type: "",
+       defaultImgUrl: require("../../../assets/images/defaultImg.png")
     };
   },
   computed: {
@@ -56,10 +57,6 @@ export default {
     list(){
         return this.defaultData.data
     }
-  },
-  created () {
-    this.list = this.defaultData.data;
-
   },
 };
 </script>

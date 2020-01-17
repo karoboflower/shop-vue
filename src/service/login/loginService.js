@@ -18,9 +18,10 @@ class loginService {
         })
     }
     getCity(){
-          
+        var location=document.domain;
             return new Promise(resolve=>{
                 request.get('/shop/netinfo/sxps.mtlyy.com',null,).then(res=>{
+               // request.get('/shop/netinfo/'+location,null,).then(res=>{
                     resolve(res.data);
                 })
             })
@@ -39,7 +40,15 @@ class loginService {
             })
         })
     }
+    getUserInfo(){
+        return new Promise(resolve=>{
+            request.get('/oauth/getUserInfo',{}).then(res=>{
+                resolve(res.data);
+            })
+        })
+    }
     //获取当前商户的定位
+    
 
 }
 

@@ -3,7 +3,7 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path')
-
+const targetUrl="http://120.78.142.62:4000"
 module.exports = {
   dev: {
 
@@ -11,54 +11,52 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-
-
       "/role": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
       "/oauth": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
       "/delivery": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
       "/region": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
       "/goods": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
       "/order": {
-        target: "http://120.78.142.62:4000",
+        target:targetUrl,
         changeOrigin: true
       },
       "/goodsspu": {
-        target: "http://120.78.142.62:4000",
+        target:targetUrl,
         changeOrigin: true
       },
       "/goodsspec": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
       "/filegroup": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
       "/goodscategory": {
-        target: "http://120.78.142.62:4000",
+        target:targetUrl,
         changeOrigin: true
       },
       "/file": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
       "/shop": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
       "/cityjson": {
@@ -66,11 +64,14 @@ module.exports = {
         changeOrigin: true
       },
       "/wxapppage": {
-        target: "http://120.78.142.62:4000",
+        target: targetUrl,
         changeOrigin: true
       },
-     
-
+      //权限
+      "/sysperm": {
+        target: targetUrl,
+        changeOrigin: true
+      },
     },
 
 
@@ -103,7 +104,7 @@ module.exports = {
     index: path.resolve(__dirname, '../dist/index.html'),
 
     // Paths
-    assetsRoot: path.resolve(__dirname, '../dist'),
+    assetsRoot: path.resolve(__dirname, '../dist'),//指向包含应用程序的所有静态资源的根目录
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
 

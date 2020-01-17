@@ -16,10 +16,10 @@
 </template>
 
 <script>
-import wxappService from "../../../service/wxapp/wxappService";
+import freightService from "../../../service/wxapp/wxappService";
 export default {
   name: "wxappPageDesign",
-  data() {
+  data () {
     return {
       columns: [
         {
@@ -60,7 +60,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.edit(params);
+                      this.edit(params.row.pageId);
                     }
                   }
                 },
@@ -78,7 +78,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.remove(params);
+                      this.remove(params.row.pageId);
                     }
                   }
                 },
@@ -106,45 +106,82 @@ export default {
       wxapp: []
     };
   },
-  created() {
-    wxappService.getPage().then(res => {
-      if (res.code == 0) {
-        this.wxapp = res.data.records;
-        for (var i = 0; i < this.wxapp.length; i++) {
-          if (this.wxapp[i].pageType == 10) {
-            this.wxapp[i].pageTypes = "自定义页面";
-          } else if (this.wxapp[i].pageType == 20) {
-            this.wxapp[i].pageTypes = "首页";
-          }
-        }
-      } else {
-        this.$Message.info("登录超时请重新登录");
-        this.$router.push("/login");
-      }
-    });
+  created () {
+    this.getData();
   },
   methods: {
     // 新增
-    add() {
+    add () {
       this.$router.push('addPage')
     },
+    getData () {
+      freightService.getPage().then(res => {
+        if (res.code == 0) {
+          this.wxapp = res.data.records;
+          for (var i = 0; i < this.wxapp.length; i++) {
+            if (this.wxapp[i].pageType == 10) {
+              this.wxapp[i].pageTypes = "自定义页面";
+            } else if (this.wxapp[i].pageType == 20) {
+              this.wxapp[i].pageTypes = "首页";
+            }
+          }
+        } else {
+          this.$Message.info("获取信息失败");
+          return false;
+        }
+      });
+    },
     // 编辑
-    edit() {},
+    edit (id) {
+         this.$router.push({
+          path:'/addPage',
+          query:{
+              id:id
+          }
+      });
+       
+     },
     // 设为首页
-    setHome() {},
+    setHome (params) {
+      let _this = this;
+      let param = {};
+      param.pageId = params.row.pageId;
+      param.pageType = "20";
+      freightService.editPage(param).then(res => {
+        _this.getData();
+        if (res.code === 0) {
+          _this.$Message.info("设为首页成功");
+        }else{
+       _this.$Message.info("设为首页失败");
+        return false;
+        }
+      
+      })
+    },
     // 删除
-    remove() {
+    remove (id) {
+      let _this = this
       this.$Modal.confirm({
         content: "<p>确定要删除吗？</p>",
         okText: "确定",
         cancelText: "取消",
         onOk: () => {
-          console.log("ok");
+          freightService.deletePage(id).then(res => {
+            _this.getData();
+            if (res.code === 0) {
+              _this.$Message.info("删除成功");
+
+            } else {
+              _this.$Message.info("删除失败");
+              return false;
+            }
+
+          })
         }
       });
     },
     //翻页
-    changePage() {}
+    changePage () { }
   }
 };
 </script>

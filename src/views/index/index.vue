@@ -1,5 +1,5 @@
 <template>
-  <div class="index_wrapper">
+  <div class="index_wrapper" style="width:100%">
     <div class="item">
       <div class="item_title">商城统计</div>
       <ul class="d_around widgetone">

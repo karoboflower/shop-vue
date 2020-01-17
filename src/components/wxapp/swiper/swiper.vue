@@ -25,23 +25,23 @@
         class="color_pick"
       ></photoshop-picker>
 
-      <li class="swiper_time">
-        <span>切换时间</span>
-        <InputNumber type="text" v-model="interval" @on-blur="changeInter" />
-        <p>轮播图自动切换的间隔时间，单位：毫秒</p>
+      <li class="swiper_time d_start">
+        <span>切换时间&nbsp;&nbsp;</span>
+        <Input type="number" :value="interval" @on-blur="changeInter($event)" style="width:200px;" />
+     
       </li>
       <li class="swiper_items">
         <div class="swiper_item" v-for="(imgItem,index) of imgList" :key="index">
           <div class="img_box d_start">
             <span>图片</span>
             <div>
-              <img :src="imgItem.linkUrl" alt @click="changeImg(index)" />
+              <img :src="imgItem.img?imgItem.img:defaultImgUrl" alt @click="changeImg(index)" />
               <p>建议尺寸750X360</p>
             </div>
           </div>
           <div class="img_link d_start">
             <span>链接地址</span>
-            <Input type="text" :value="imgItem.linkUrl" />
+            <Input type="text" :value="imgItem.linkUrl"  @on-blur="changeLinkUrl($event,index)"/>
           </div>
           <i class="iconfont icon-web-icon- wrong" @click="downImg(index)"></i>
         </div>
@@ -66,6 +66,7 @@ export default {
   },
   data () {
     return {
+      defaultImgUrl: require("../../../assets/images/defaultImg.png"),
       photoShow: false,
       showColor: false,
       colors: {
@@ -75,17 +76,10 @@ export default {
         rgba: { r: 25, g: 77, b: 51, a: 1 },
         a: 1
       },
-      interval: "",
       isShowModel: false,
     };
   },
   computed: {
-    imgList: function () {
-      return this.defaultData.data;
-    },
-    point () {
-      return this.defaultData.style.btnShape
-    },
     choseColor: {
       get: function () {
         return this.defaultData.style.btnColor;
@@ -99,28 +93,38 @@ export default {
         backgroundColor: this.choseColor
       }
     },
-    interval:{
-        get: function () {
-        return this.defaultData.style.btnColor;
+    imgList:{
+         get: function () {
+        return this.defaultData.data;
       },
       set: function (val) {
-        this.defaultData.style.btnColor = val;
-      }
+        this.defaultData.data = val;
+      },
+    },
+    interval:{
+     get: function () {
+        return Number(this.defaultData.params.interval);
+      },
+      set: function (val) {
+       this.defaultData.params.interval = val;
+      },
+    },
+    point:{
+        get: function () {
+        return this.defaultData.style.btnShape;
+      },
+      set: function (val) {
+       this.defaultData.style.btnShape = val;
+      },
     }
-  },
-  created () {
-    this.interval = Number(this.defaultData.params.interval);
-    this.point = this.defaultData.style.point;
-    this.choseColor = this.defaultData.style.btnColor;
-    this.imgList = this.defaultData.data;
   },
   methods: {
     //改变切换时间
-    changeInter () {
+    changeInter (e) {
        this.$store.commit("incrementCompListItem", {
           type:'params',
           value:{
-               interval: this.interval
+               interval: e.target.value
           }
          });
     },
@@ -131,8 +135,8 @@ export default {
       window.windowphotoGallery.show({
         isShowModel: _this.isShowModel,
         onConfirm: function (data) {
-          _this.imgList[index]=data[0];
-            this.$store.commit("incrementCompListItem", {
+          _this.imgList[index].img=data[0].fileUrl;
+          _this.$store.commit("incrementCompListItem", {
           type:'data',
           value:_this.imgList
          });
@@ -154,7 +158,8 @@ export default {
     //添加图片
     addImg () {
       var data = {
-        linkUrl: "https://demo.yiovo.com/assets/store/img/diy/banner/01.png"
+        linkUrl: "", 
+        img: ""
       };
       this.imgList.push(data);
         this.$store.commit("incrementCompListItem", {
@@ -171,6 +176,14 @@ export default {
           }
          });
       this.point = data;
+    },
+    changeLinkUrl(e,index){
+        let _value=e.target.value;
+        this.imgList[index].linkUrl=_value;
+         this.$store.commit("incrementCompListItem", {
+          type:'data',
+          value:this.imgList
+         });
     },
     // 显示颜色版弹框
     changeColor () {
@@ -242,12 +255,9 @@ export default {
   transform: translateX(-50%);
 }
 .swiper_box .swiper_time {
-  display: inline-block;
   margin-bottom: 20px;
 }
-.swiper_box .swiper_time .ivu-input-number {
-  width: 200px;
-}
+
 
 .swiper_box .swiper_time p {
   color: #838fa1;

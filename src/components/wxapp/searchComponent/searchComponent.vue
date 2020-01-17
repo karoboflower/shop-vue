@@ -1,8 +1,8 @@
 <template>
   <div class="search_com">
-    <div class="sear_input" :style="styleObject">
+    <div class="sear_input" :style="searchStyleObj">
       <i class="iconfont icon-search"></i>
-      <span class="txt">{{data}}</span>
+      <span class="txt">{{placeholder1}}</span>
     </div>
     <slot name="del"></slot>
   </div>
@@ -10,31 +10,30 @@
 <script>
 export default {
   name: "searchComponent",
+  data: function () {
+    return {
+
+    }
+  },
   props: {
-    data: {
-      type: String,
-      default: []
+    defaultData: {
+      type: Object,
+      default: {}
     }
   },
   computed: {
-    searchStyleObj() {
-      return this.$store.state.searchStyleObj;
+    searchStyleObj () {
+      let _style = this.defaultData.style;
+      return {
+        textAlign: _style.textAlign,
+        borderRadius: (_style.searchStyle === "square" ? '0' : _style.searchStyle === "radius" ? '5' : _style.searchStyle === "round" ? '15' : '0') + 'px'
+      }
+    },
+    placeholder1 () {
+      return this.defaultData.params.placeholder;
     }
   },
 
-  watch: {
-    searchStyleObj(newVal) {
-      this.styleObject = newVal;
-    }
-  },
-  data() {
-    return {
-      styleObject: {
-        borderRadius: "0",
-        textAlign: "left"
-      },
-    };
-  }
 };
 </script>
 <style scoped>

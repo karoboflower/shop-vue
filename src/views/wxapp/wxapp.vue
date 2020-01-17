@@ -1,32 +1,6 @@
 <template>
-  <div class="d_start wxapp_warpper">
-    <!-- 左边菜单栏 -->
-    <div class="page_menu_box">
-      <div class="page_menu_title">{{tabTitle}}</div>
-      <ul>
-        <li
-          v-for="(item,index) of tabList"
-          :key="index"
-          :class="activeI==index ?'page_menu_active':''"
-          @click="changeTab(index,item.child)"
-          @click.stop
-        >
-          <Collapse simple v-if="item.child" v-model="value1">
-            <Panel name="1">
-              页面管理
-              <p
-                slot="content"
-                v-for="(child,i) of item.child"
-                :key="child.name"
-                @click="changePanle($event,i,index)"
-                :class="panleI==i ?'page_menu_active':''"
-              >{{child.name}}</p>
-            </Panel>
-          </Collapse>
-          <span v-else>{{item.name}}</span>
-        </li>
-      </ul>
-    </div>
+
+ 
 
     <!-- 右边内容 -->
     <div class="wxapp_cnt">
@@ -34,7 +8,6 @@
         <router-view></router-view>
       </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -46,32 +19,6 @@ export default {
       panleI: -1, //折叠菜单选中
       activeI: 0, //非折叠菜单选中
       tabTitle: "小程序",
-      tabList: [
-        {
-          name: "小程序设置",
-          router: "/wxappSetting"
-        },
-        {
-          child: [
-            {
-              name: "页面设计",
-              router: "/wxappPageDesign"
-            },
-            {
-              name: "分类模板",
-              router: "/wxappPageModule"
-            },
-            {
-              name: "页面链接",
-              router: "/wxappPageLink"
-            }
-          ]
-        },
-        {
-          name: "帮助中心",
-          router: "/wxappHelp"
-        }
-      ]
     };
   },
   created() {

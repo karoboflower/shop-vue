@@ -14,7 +14,7 @@
           <i class="iconfont icon-add"></i> 选择图片
         </Button>
         <div v-show="formValidate.imageId||formValidate.imageId===0" style="padding:10px 0px;">
-          <img :src="'/file/show/'+formValidate.imageId" width="120" height="140" />
+          <img :src="formValidate.fileUrl" width="120" height="140" />
         </div>
       </FormItem>
 
@@ -38,6 +38,7 @@ export default {
         sort: '',
         parentId: '',
         imageId: '',
+        fileUrl:''
       },
       isShowModel: false,
       ruleValidate: {
@@ -114,7 +115,8 @@ export default {
       window.windowphotoGallery.show({
         isShowModel: _this.isShowModel,
         onConfirm: function (data) {
-          _this.formValidate.imageId = data[0]
+          _this.formValidate.imageId = data[0].fileId
+          _this.formValidate.fileUrl=data[0].fileUrl
         }
       })
     },

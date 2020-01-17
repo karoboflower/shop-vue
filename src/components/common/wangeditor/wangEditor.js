@@ -2660,7 +2660,7 @@ import Vue from 'vue'
                 onConfirm:function(data){
                     var html = [];
                     data.forEach(function(item) {
-                        html.push('<p><img src="/file/show/' + item + '"></p>')
+                        html.push('<p><img src="' + item.fileUrl + '"></p>')
                     });
                     me.editor.cmd.do('insertHTML', html)
                 }

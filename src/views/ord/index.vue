@@ -16,9 +16,14 @@
         <DatePicker type="date" placeholder="请选择截止日期" style="width: 200px"></DatePicker>
       </Col>
       <Col span="4">
-        <Input v-model="ordersName" on-click>
-          <Button slot="append" icon="ios-search"></Button>
-        </Input>
+        <Input
+          v-model="orderNo"
+          class="select_btn"
+          @on-search="refreshData"
+          search
+          enter-button
+          placeholder="订单号"
+        />
       </Col>
     </Row>
     <Row>
@@ -46,7 +51,7 @@
           <tr v-for="(da,index) in item.orderItemVoList" :key="da.orderId">
             <td width="30%" style="text-align:left;">
               <div class="goods-image">
-                <img class="show-image" :src="getImage(da.imageId)" width="120" height="120" />
+                <img class="show-image" :src="da.fileUrl" width="120" height="120" />
               </div>
               <div class="goods-info">
                 <p class="goods-title">{{da.goodsName}}</p>
@@ -125,7 +130,15 @@
             </td>
           </tr>
         </tbody>
+        <tbody v-if="orderList.length<1">
+          <tr>
+            <td colspan="6">暂无数据</td>
+          </tr>
+        </tbody>
       </table>
+      <div style="float: right;margin-top:10px;">
+        <Page :total="dataTotal" :current="dataCurrent" @on-change="changePage"></Page>
+      </div>
     </Row>
   </div>
 </template>
@@ -135,14 +148,16 @@ export default {
   name: "",
   data () {
     return {
-      ordersName: '',
+      orderNo: '',
       orderList: [],
+      dataTotal: 0,
+      dataCurrent: 1,
     }
   },
   created () {
     let type = this.$route.query.type;
     let params = {};
-   //10未付款，20已付款，30未发货，40已发货，50待收货，60已收货，70取消
+    //10未付款，20已付款，30未发货，40已发货，50待收货，60已收货，70取消
     if (type === "cancel") {
       //取消发货
       params.orderStatus = 70;
@@ -162,9 +177,15 @@ export default {
     } else if (type === "finish") {
       //已完成
       params.orderStatus = 60;
-    }else{
-         params.orderStatus = 50;
+    } else {
+      params.orderStatus = 50;
     }
+    params.size = 10;
+    params.current = this.dataCurrent;
+    if (this.orderNo) {
+      params.orderNo = this.orderNo;
+    }
+
     this.getInfo(params);
 
   },
@@ -198,9 +219,25 @@ export default {
         }
       })
     },
-    gotoDetail:function(code){
-          this.$router.push({path: '/detail', query: {id:code}})
-    }
+    gotoDetail: function (code) {
+      this.$router.push({ path: '/detail', query: { id: code } })
+    },
+    changePage (item) {
+      this.dataCurrent = item;
+      var params = { current: this.dataCurrent, size: 10 }
+      if (this.orderNo) {
+        params.orderNo = this.orderNo;
+      }
+      this.getInfo(params);
+    },
+    refreshData () {
+      var params = { current: this.dataCurrent, size: 10 }
+      if (this.orderNo) {
+        params.orderNo = this.orderNo;
+      }
+      this.getInfo(params);
+    },
+
   }
 
 };

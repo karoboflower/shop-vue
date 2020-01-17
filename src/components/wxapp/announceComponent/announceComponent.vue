@@ -1,42 +1,43 @@
 <template>
   <div class="announce_com">
-    <div class="d_start item" v-for="(item,index) of data" :key="index" :style="styleObject">
-      <img :src="item.url" class="img" />
-      <span class="txt">{{item.title}}</span>
+    <div class="d_start item"   :style="styleObject">
+      <img :src="params.img?params.img:defaultImgUrl" class="img" />
+      <span class="txt" :style="{'fontSize':styleObject.fontSize}">{{params.text?params.text:'这里是第一条自定义公告的标题'}}</span>
     </div>
-    <slot name="del"></slot>
   </div>
 </template>
 <script>
 export default {
   name: "announceComponent",
   props: {
-    data: {
-      type: Array,
-      default: []
+    defaultData: {
+      type: Object,
+      default: {}
     }
   },
   data() {
     return {
-      styleObject: {
-        backgroundColor: "#fff",
-        color:'#000',
-        paddingTop: "0",
-        paddingBottom: "0"
-      }
+         defaultImgUrl: require("../../../assets/images/defaultImg.png")
     };
   },
-  
-  computed: {
-    announceStyleObj() {
-      return this.$store.state.announceStyleObj;
-    }
-  },
-
-  watch: {
-    announceStyleObj(newVal) {
-      this.styleObject = newVal;
-    }
+    computed: {
+    styleObject () {
+      let defaultStyle = this.defaultData.style;
+      return {
+        backgroundColor: defaultStyle.background,
+        paddingTop: defaultStyle.paddingTop+"px",
+        paddingBottom: defaultStyle.paddingTop+"px",
+        color:defaultStyle.textColor,
+        fontSize:defaultStyle.textSize+"px"
+      }
+    },
+     params () {
+      let params=this.defaultData.params;
+      return {
+        img: params.img,
+        text:params.text
+      }
+    },
   },
 };
 </script>

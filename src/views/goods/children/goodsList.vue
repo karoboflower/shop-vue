@@ -33,12 +33,12 @@
       </Select>
       </Col>
       <Col span="6">
-      <Input v-model="goodsName"
-             class="select_btn"
-             on-click="refreshData">
+       <Input v-model="goodsName" class="select_btn" @on-search="refreshData"  search enter-button placeholder="订单号" />
+      <!-- <Input v-model="goodsName"
+             class="select_btn">
       <Button slot="append"
-              icon="ios-search"></Button>
-      </Input>
+              icon="ios-search"  @on-click="refreshData"></Button>
+      </Input> -->
       </Col>
     </Row>
     <Row>
@@ -75,7 +75,7 @@ export default {
             return h("div", [
               h("img", {
                 attrs: {
-                  src: "/file/show/" + params.row.goodsUploadFiles[0].fileId,
+                  src:  params.row.goodsUploadFiles[0].fileUrl,
                   width: "120px"
                 }
               })
@@ -160,7 +160,7 @@ export default {
       ],
       getGoodsStatus: "",
       goodsName: "",
-      dataTotal: "",
+      dataTotal: 0,
       dataCurrent: 1,//当前页
     };
   },
@@ -202,15 +202,16 @@ export default {
         this.getData();
     },
     refreshData () {
-      var goodsName = this.goodsName;
-      var getGoodsType = this.getGoodsType;
-      var getGoodsStatus = this.getGoodsStatus;
+        this.getData();
     },
     getData(){
     let _this=this;
     let params={};
     params.size=10;
     params.current=this.dataCurrent;
+    params.goodsName=this.goodsName;
+    params.categoryId=this.getGoodsType;
+    params.goodsStatus=this.getGoodsStatus;
     freightService.getGoods(params).then(res => {
       _this.freight = res.data.records;
       _this.dataTotal = res.data.total;

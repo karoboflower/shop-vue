@@ -5,15 +5,15 @@
       <li class="distance d_start">
         <span>上下边距</span>
         <div class="dis_slider">
-          <Slider v-model="value" @on-input="changTopBot" :tip-format="format"></Slider>
+          <Slider v-model="value1" @on-input="changeStyle" :tip-format="format"></Slider>
         </div>
-        <div>{{padding}}px(像素)</div>
+        <div>{{value1/2}}px(像素)</div>
       </li>
       <!-- 背景颜色 -->
       <li class="color d_start">
         <span>背景颜色</span>
         <div class="point_color d_around">
-          <span @click="changeColor1" class="color_input" ref="color1"></span>
+          <span @click="changeColor1" class="color_input" :style="currentStyle1"></span>
           <span class="color_btn white" @click="resetColor1">重置</span>
         </div>
       </li>
@@ -29,7 +29,7 @@
       <li class="color d_start">
         <span>文字颜色</span>
         <div class="point_color d_around">
-          <span @click="changeColor2" class="color_input  black" ref="color2"></span>
+          <span @click="changeColor2" class="color_input black" :style="currentStyle2"></span>
           <span class="color_btn" @click="resetColor2">重置</span>
         </div>
       </li>
@@ -41,19 +41,22 @@
         @cancel="close2"
         class="color_pick"
       ></photoshop-picker>
-
-      <!-- 公告图片 -->
-      <li class="distance d_start">
-        <span>公告图片</span>
-        <div class="txt_p">
-          <img :src="data[0].url" alt />
+      <li class="d_start">
+        <span>文字大小</span>
+        <InputNumber type="text" v-model="textSize" @on-blur="changeStyle" />
+      </li>
+      <!-- 公告图标 -->
+      <li class="d_start photo_item">
+        <span>公告图标</span>
+        <div class="img_box">
+          <img :src="img?img:defaultImgUrl" alt @click="changeImg()" />
           <p>建议尺寸32*32</p>
         </div>
       </li>
       <!-- 公告内容 -->
       <li class="distance d_start">
         <span>公告内容</span>
-        <Input v-model="data[0].title" @on-blur="changeTitle" />
+        <Input v-model="title" @on-blur="changeParam" />
       </li>
     </ul>
   </div>
@@ -68,29 +71,20 @@ export default {
     "photoshop-picker": Photoshop
   },
   props: {
-    data: {
-      type: Array,
-      default: []
+    defaultData: {
+      type: Object,
+      default: {}
     }
   },
-  data() {
+  data () {
     return {
-      styleObject: {
-        backgroundColor: "#fff",
-        color: "#000",
-        paddingTop: "0",
-        paddingBottom: "0"
-      },
-      value: 0,
-      padding: 0,
+      defaultImgUrl: require("../../../assets/images/defaultImg.png"),
       showColor1: false,
       showColor2: false,
-      format(val) {
+      format (val) {
         return val + "%";
       },
-
       colors1: {
-        choseColor1: "#fff",
         hex: "#fff",
         hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
         hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
@@ -98,82 +92,155 @@ export default {
         a: 1
       },
       colors2: {
-        choseColor2: "#000",
         hex: "#000",
         hsl: { h: 150, s: 0, l: 0, a: 1 },
         hsv: { h: 150, s: 0, v: 0, a: 1 },
         rgba: { r: 1, g: 1, b: 1, a: 1 },
         a: 1
-      }
+      },
+      isShowModel: false,
     };
   },
   methods: {
-    //改变标题内容
-    changeTitle() {
-      
-      this.$emit("changeNotice", this.data);
+    //上传图片
+    changeImg () {
+      let _this = this
+      _this.isShowModel = true
+      window.windowphotoGallery.show({
+        isShowModel: _this.isShowModel,
+        onConfirm: function (data) {
+          _this.img = data[0].fileUrl;
+          _this.changeParam()
+        }
+      })
     },
     // 显示颜色版弹框
-    changeColor1() {
+    changeColor1 () {
       this.showColor1 = true;
     },
     // 显示颜色版弹框
-    changeColor2() {
+    changeColor2 () {
       this.showColor2 = true;
     },
     // 颜色版选背景颜色
-    updateValue1(data) {
+    updateValue1 (data) {
       this.choseColor1 = data.hex;
     },
     // 颜色版选文字颜色
-    updateValue2(data) {
+    updateValue2 (data) {
       this.choseColor2 = data.hex;
     },
     // 确定提交选中背景颜色
-    sure1() {
-      this.$refs.color1.style.backgroundColor = this.choseColor1;
-      this.styleObject.backgroundColor = this.choseColor1;
-      this.$store.commit("incrementAnnounceStyleObj", this.styleObject);
+    sure1 () {
       this.showColor1 = false;
+      this.changeStyle()
     },
     // 颜色版选文字颜色
-    sure2() {
-      this.$refs.color2.style.backgroundColor = this.choseColor2;
-      this.styleObject.color = this.choseColor2;
-      this.$store.commit("incrementAnnounceStyleObj", this.styleObject);
+    sure2 () {
       this.showColor2 = false;
+      this.changeStyle()
     },
     //关闭背景颜色
-    close1() {
+    close1 () {
       this.showColor1 = false;
     },
     //关闭文字颜色
-    close2() {
+    close2 () {
       this.showColor2 = false;
     },
     // 重置组件颜色
-    resetColor1() {
-      this.$refs.color1.style.backgroundColor = "#fff";
-      this.styleObject.backgroundColor = "#fff";
-      this.$store.commit("incrementAnnounceStyleObj", this.styleObject);
+    resetColor1 () {
+      this.choseColor1 = "#fff";
+      this.changeStyle()
     },
     // 重置组件颜色
-    resetColor2() {
-      this.$refs.color2.style.backgroundColor = "#000";
-      this.styleObject.color = "#000";
-      this.$store.commit("incrementAnnounceStyleObj", this.styleObject);
+    resetColor2 () {
+      this.choseColor2 = "#fff";
+      this.changeStyle()
     },
-    // 改变上下边距
-    changTopBot(data) {
-      this.padding = parseInt(data / 2);
-      this.styleObject.paddingBottom = this.padding + "px";
-      this.styleObject.paddingTop = this.padding + "px";
-      this.$store.commit("incrementAnnounceStyleObj", this.styleObject);
+    changeStyle () {
+      this.$store.commit("incrementCompListItem", {
+        type: 'style',
+        value: {
+          background: this.choseColor1, textColor: this.choseColor2, paddingTop: this.value1 * 2,textSize:this.textSize        }
+      });
+    },
+    changeParam () {
+      this.$store.commit("incrementCompListItem", {
+        type: 'params',
+        value: {
+          text: this.title,
+          img: this.img
+        }
+      });
+    },
+  },
+  computed: {
+    currentStyle1: function () {
+      return {
+        backgroundColor: this.choseColor1
+      }
+    },
+    currentStyle2: function () {
+      return {
+        backgroundColor: this.choseColor2
+      }
+    },
+    choseColor1: {
+      get: function () {
+        return this.defaultData.style.background;
+      },
+      set: function (val) {
+        this.defaultData.style.background = val;
+      }
+    },
+    choseColor2: {
+      get: function () {
+        return this.defaultData.style.textColor;
+      },
+      set: function (val) {
+        this.defaultData.style.textColor = val;
+      },
+    },
+    value1: {
+      get: function () {
+        return this.defaultData.style.paddingTop / 2;
+      },
+      set: function (val) {
+        this.defaultData.style.paddingTop = val * 2;
+      },
+    },
+    textSize: {
+      get: function () {
+        return Number(this.defaultData.style.textSize);
+      },
+      set: function (val) {
+        this.defaultData.style.textSize = val;
+      },
+    },
+    title: {
+      get: function () {
+        return this.defaultData.params.text;
+      },
+      set: function (val) {
+        this.defaultData.params.text = val;
+      }
+    },
+    img: {
+      get: function () {
+        return this.defaultData.params.img;
+      },
+      set: function (val) {
+        this.defaultData.params.img = val;
+      }
     }
-  }
+
+  },
+
+
 };
 </script>
-<style>
+<style >
 .announce_box {
   color: #656565;
   font-weight: inherit;
@@ -183,7 +250,8 @@ export default {
 .announce_box li span {
   padding-right: 10px;
 }
-.announce_box .distance {
+.announce_box .distance,
+.announce_box .photo_item {
   margin: 20px auto;
 }
 .announce_box .ivu-input-wrapper {
@@ -192,6 +260,16 @@ export default {
 .announce_box .ivu-input {
   border: none;
   border-bottom: 1px solid #dcdee2;
+}
+.announce_box .photo_item img {
+  height: 50px;
+  width: 60px;
+}
+.photo_box .photo_item .img_box {
+  margin-bottom: 20px;
+}
+.announce_box .photo_item .img_box {
+  margin-bottom: 20px;
 }
 .announce_box .distance .txt_p {
   color: #838fa1;
@@ -229,13 +307,12 @@ export default {
   border: 1px solid #000;
   width: 60px;
   height: 20px;
-
 }
-.white{
-    background: #fff;
+.white {
+  background: #fff;
 }
-.black{
-      background: #000;
+.black {
+  background: #000;
 }
 .announce_box li .point_color .color_btn {
   display: inline-block;

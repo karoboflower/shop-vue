@@ -1,9 +1,9 @@
 <template>
   <div>
-    <ul class="navigation_compon d_start">
-      <li v-for="(item,index) of data" :key="index" class="default" :style="styleObject">
-        <img :src="item.url" class="tabImg" />
-        <p class="txt">{{item.title}}{{index+1}}</p>
+    <ul class="navigation_compon d_start" :style="bg">
+      <li v-for="(item,index) of list" :key="index" class="default" :style="styleObject">
+        <img :src="item.img?item.img:defaultImgUrl" class="tabImg" />
+        <p class="txt" :style="{'color':item.color?item.color:'#666'}">{{item.text?item.text:'按钮文字'+index}}</p>
       </li>
       <slot name="del"></slot>
     </ul>
@@ -16,32 +16,29 @@ export default {
   name: "navigationComponent",
   data() {
     return {
-      styleObject: {
-        backgroundColor: "#fff",
-        width: "25%",
-        color1: "#000",
-        color2: "#000",
-        color3: "#000",
-        color4: "#000"
-      }
+        defaultImgUrl: require("../../../assets/images/defaultImg.png")
     };
   },
-  props: {
-    data: {
-      type: Array,
-      default: []
+   props: {
+    defaultData: {
+      type: Object,
+      default: {}
     }
   },
-
   computed: {
-    navigationStyleObj() {
-      return this.$store.state.navigationStyleObj;
-    }
-  },
-
-  watch: {
-    navigationStyleObj(newVal) {
-      this.styleObject = newVal;
+    styleObject () {
+      let defaultStyle = this.defaultData.style;
+      return {
+        width: (defaultStyle.rowsNum=="4"?"25%":defaultStyle.rowsNum=="5"?"20%":defaultStyle.rowsNum=="3"?"33%":"100%")
+      }
+    },
+    list () {
+      return this.defaultData.data
+    },
+    bg(){
+        return {
+            backgroundColor:this.defaultData.style.background
+        }
     }
   },
   methods: {}

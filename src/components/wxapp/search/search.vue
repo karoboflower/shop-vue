@@ -2,22 +2,22 @@
   <div class="search_box">
     <div class="search_item d_start">
       <span class="des">提示文字</span>
-      <Input v-model="notice"  @on-blur="changeNotice" />
+      <Input v-model="placeholder1" @on-blur="changeParams" />
     </div>
     <div class="search_item">
       <span class="des">搜索框样式</span>
-      <RadioGroup v-model="point1" @on-change="changeRadio">
-        <Radio label="0">方形</Radio>
-        <Radio label="1">圆角</Radio>
-        <Radio label="2">圆弧</Radio>
+      <RadioGroup v-model="searchStyle" @on-change="changeStyle">
+        <Radio label="square">方形</Radio>
+        <Radio label="radius">圆角</Radio>
+        <Radio label="round">圆弧</Radio>
       </RadioGroup>
     </div>
     <div class="search_item">
       <span class="des">文字对齐</span>
-      <RadioGroup v-model="point2" @on-change="changeAlign">
-        <Radio label="0">居左</Radio>
-        <Radio label="1">居中</Radio>
-        <Radio label="2">居右</Radio>
+      <RadioGroup v-model="textAlign" @on-change="changeStyle">
+        <Radio label="left">居左</Radio>
+        <Radio label="center">居中</Radio>
+        <Radio label="right">居右</Radio>
       </RadioGroup>
     </div>
   </div>
@@ -25,50 +25,57 @@
 <script>
 export default {
   name: "search",
-  data() {
+  data () {
     return {
-      point1: "0",
-      point2: "0",
-      notice: "请输入关键字进行搜索",
-      styleObject: {
-        borderRadius: "0",
-        textAlign: "left"
-      }
     };
   },
-  methods: {
-    //改变圆角
-    changeRadio(data) {
-      if (data == 0) {
-        this.styleObject.borderRadius = 0+"px";
-        this.$store.commit("incrementSearchStyleObj", this.styleObject);
-    
-      } else if (data == 1) {
-        this.styleObject.borderRadius = 5+ "px";
-        this.$store.commit("incrementSearchStyleObj", this.styleObject);
-      } else if (data == 2) {
-        this.styleObject.borderRadius =15+"px";
-        this.$store.commit("incrementSearchStyleObj", this.styleObject);
-      }
-    },
-    //改变文字排列
-    changeAlign(data) {
-      if (data == 0) {
-        this.styleObject.textAlign = "left";
-        this.$store.commit("incrementSearchStyleObj", this.styleObject);
-      } else if (data == 1) {
-        this.styleObject.textAlign = "center";
-        this.$store.commit("incrementSearchStyleObj", this.styleObject);
-      } else if (data == 2) {
-        this.styleObject.textAlign = "right";
-        this.$store.commit("incrementSearchStyleObj", this.styleObject);
-      }
-    },
-    //改变提示语
-    changeNotice(){
-      this.$emit('chagneTxt',this.notice)
-      console.log('test',this.notice)
+    props: {
+    defaultData: {
+      type: Object,
+      default: {}
     }
+  },
+  computed: {
+    placeholder1: {
+      get: function () {
+        return this.defaultData.params.placeholder;
+      },
+      set: function (val) {
+        this.defaultData.params.placeholder = val;
+      }
+    },
+    textAlign: {
+      get: function () {
+        return this.defaultData.style.textAlign;
+      },
+      set: function (val) {
+        this.defaultData.style.textAlign = val;
+      }
+    },
+    searchStyle: {
+      get: function () {
+        return this.defaultData.style.searchStyle;
+      },
+      set: function (val) {
+        this.defaultData.style.searchStyle = val;
+      }
+    },
+  },
+  methods: {
+    changeStyle () {
+      this.$store.commit("incrementCompListItem", {
+        type: 'style',
+        value: {
+          textAlign: this.textAlign, searchStyle: this.searchStyle        }
+      });
+    },
+    changeParams () {
+      this.$store.commit("incrementCompListItem", {
+        type: 'params',
+        value: {
+          placeholder: this.placeholder1       }
+      });
+    },
   }
 };
 </script>

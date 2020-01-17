@@ -78,9 +78,8 @@
 
             <td class="am-text-middle spec-image">
               <div :data-index="index" class="j-selectImg data-image">
-                <!-- <img :src="'/file/show/'+item.form.fileId" alt /> -->
                 <div v-if="item.form.fileId" style="position:relative;">
-                  <img :src="'/file/show/'+item.form.fileId" width="32" height="32" />
+                  <img :src="item.form.fileUrl" width="32" height="32" />
                   <Icon
                     type="ios-close-circle"
                     @click="deletePhoto(item)"
@@ -91,19 +90,19 @@
               </div>
             </td>
             <td>
-              <input type="text" name="goodsNo" :value="item.form.goodsNo" />
+              <input type="text" name="goodsNo" :value="item.form.goodsNo" @blur="changeaSkusItem(index,$event,'goodsNo')" />
             </td>
             <td>
-              <input type="number" name="goodsPrice" :value="item.form.goodsPrice" required />
+              <input type="number" name="goodsPrice" :value="item.form.goodsPrice" @blur="changeaSkusItem(index,$event,'goodsPrice')" required />
             </td>
             <td>
-              <input type="number" name="linePrice" :value="item.form.linePrice " />
+              <input type="number" name="linePrice" :value="item.form.linePrice" @blur="changeaSkusItem(index,$event,'linePrice')" />
             </td>
             <td>
-              <input type="number" name="stockNum" :value="item.form.stockNum " required />
+              <input type="number" name="stockNum" :value="item.form.stockNum" @blur="changeaSkusItem(index,$event,'stockNum')" required />
             </td>
             <td>
-              <input type="number" name="goodsWeight" :value="item.form.goodsWeight" required />
+              <input type="number" name="goodsWeight" :value="item.form.goodsWeight" @blur="changeaSkusItem(index,$event,'goodsWeight')" required />
             </td>
           </tr>
         </tbody>
@@ -138,7 +137,7 @@ export default {
       },
       isShowModel: false,
       currentIndex: '',
-      defaultGoodsSpec:{
+      defaultGoodsSpec: {
         spec_attr: [],
         spec_list: [],
         goodsSkus: [],
@@ -148,10 +147,13 @@ export default {
   props: {
     defaultGoodsSpecs: {
       type: Object,
-      default: {
-        spec_attr: [],
-        spec_list: [],
-        goodsSkus: [],
+      default: () => {
+        return {
+          spec_attr: [],
+          spec_list: [],
+          goodsSkus: [],
+        }
+
       }
     },
 
@@ -159,7 +161,7 @@ export default {
   computed: {
     spec_attr: {
       get: function () {
-        return this.defaultGoodsSpec&&this.defaultGoodsSpec.spec_attr?this.defaultGoodsSpec.spec_attr:[]
+        return this.defaultGoodsSpec && this.defaultGoodsSpec.spec_attr ? this.defaultGoodsSpec.spec_attr : []
       },
       set: function (val) {
         this.defaultGoodsSpec.spec_attr = val
@@ -167,7 +169,7 @@ export default {
     },
     spec_list: {
       get: function () {
-        return this.defaultGoodsSpec&&this.defaultGoodsSpec.spec_list?this.defaultGoodsSpec.spec_list:[]
+        return this.defaultGoodsSpec && this.defaultGoodsSpec.spec_list ? this.defaultGoodsSpec.spec_list : []
       },
       set: function (val) {
         this.defaultGoodsSpec.spec_list = val
@@ -175,17 +177,17 @@ export default {
     },
     goodsSkus: {
       get: function () {
-        return this.defaultGoodsSpec&&this.defaultGoodsSpec.goodsSkus?this.defaultGoodsSpec.goodsSkus:[]
+        return this.defaultGoodsSpec && this.defaultGoodsSpec.goodsSkus ? this.defaultGoodsSpec.goodsSkus : []
       },
       set: function (val) {
         this.defaultGoodsSpec.goodsSkus = val
       }
     }
   },
-  watch:{
-      defaultGoodsSpecs:function(val){
-          this.defaultGoodsSpec=this.defaultGoodsSpecs
-      }
+  watch: {
+    defaultGoodsSpecs: function (val) {
+      this.defaultGoodsSpec = this.defaultGoodsSpecs
+    }
   },
   methods: {
     showAdd () {
@@ -287,7 +289,7 @@ export default {
         _this.goodsSkus[m].goodsSales = 0;
 
       }
-      _this.spec_list =spec_list;
+      _this.spec_list = spec_list;
       _this.$emit('goodsSpecs', _this.goodsSkus, _this.spec_attr);
 
     },
@@ -392,8 +394,9 @@ export default {
         onConfirm: function (val) {
           _this.isShowModel = false
           if (val && val.length) {
-            _this.goodsSkus[_this.currentIndex].fileId = val[0];
-            _this.$set(_this.spec_list[_this.currentIndex].form, 'fileId', val[0])
+            _this.goodsSkus[_this.currentIndex].fileId = val[0].fileId;
+            _this.$set(_this.spec_list[_this.currentIndex].form, 'fileId', val[0].fileId)
+             _this.$set(_this.spec_list[_this.currentIndex].form, 'fileUrl', val[0].fileUrl)
           }
 
         }
@@ -402,6 +405,7 @@ export default {
     },
     deletePhoto (item) {
       item.form.fileId = '';
+      item.form.fileUrl='';
     },
     deleteSpec (item) {
       this.spec_attr.splice(item, 1);
@@ -410,6 +414,11 @@ export default {
     deleteSpecValue (index, index1) {
       this.spec_attr[index].specValues.splice(index1, 1);
       this.buildSpeclist();
+    },
+    changeaSkusItem(index,e,type){
+        let _this=this;
+        _this.spec_list[index].form[type]=e.target.value;
+        _this.goodsSkus[index][type]=e.target.value
     }
 
   },
@@ -445,7 +454,7 @@ export default {
   text-align: center;
   padding: 0 15px;
   border-radius: 2px;
-  font-size: 1.0rem;
+  font-size: 1rem;
   line-height: 30px;
 }
 .spec-item-add {

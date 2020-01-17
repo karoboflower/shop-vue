@@ -5,7 +5,7 @@
       <li class="color d_start">
         <span>背景颜色</span>
         <div class="point_color d_around">
-          <span @click="changeColor1" class="color_input" ref="color1"></span>
+          <span @click="changeColor1" class="color_input" :style="currentStyle1"></span>
           <span class="color_btn" @click="resetColor1">重置</span>
         </div>
       </li>
@@ -21,17 +21,17 @@
       <!-- 线条样式 -->
       <li class="flex_type d_start">
         <span>指示点颜色</span>
-        <RadioGroup v-model="radioGroup" @on-change="changeBor">
-          <Radio label="0">实线</Radio>
-          <Radio label="1">虚线</Radio>
-          <Radio label="2">点状</Radio>
+        <RadioGroup v-model="radioGroup" @on-change="changeStyle">
+          <Radio label="solid">实线</Radio>
+          <Radio label="dashed">虚线</Radio>
+          <Radio label="dotted">点状</Radio>
         </RadioGroup>
       </li>
       <!-- 线条颜色 -->
       <li class="color d_start">
         <span>线条颜色</span>
         <div class="point_color d_around">
-          <span @click="changeColor2" class="black" ref="color2"></span>
+          <span @click="changeColor2" class="black" :style="currentStyle2"></span>
           <span class="color_btn" @click="resetColor2">重置</span>
         </div>
       </li>
@@ -47,17 +47,17 @@
       <li class="distance d_start">
         <span>线条高度</span>
         <div class="dis_slider">
-          <Slider v-model="value1" @on-input="changHeight" :tip-format="format1"></Slider>
+          <Slider v-model="value1" @on-input="changeStyle" :tip-format="format1"></Slider>
         </div>
-        <div>{{lineHeight}}px(像素)</div>
+        <div>{{value1/5}}px(像素)</div>
       </li>
       <!-- 上下边距 -->
       <li class="distance d_start">
         <span>上下边距</span>
         <div class="dis_slider">
-          <Slider v-model="value2" @on-input="changTopBot" :tip-format="format2"></Slider>
+          <Slider v-model="value2" @on-input="changeStyle" :tip-format="format2"></Slider>
         </div>
-        <div>{{margin}}px(像素)</div>
+        <div>{{value2/2}}px(像素)</div>
       </li>
     </ul>
   </div>
@@ -71,30 +71,20 @@ export default {
   components: {
     "photoshop-picker": Photoshop
   },
-  data() {
+  data () {
     return {
-      radioGroup: "0",
-      styleObject: {
-        borderBottomWidth: "1px",
-        borderBottomStyle: "solid",
-        borderBottomColor: "#000",
-        marginTop: "10px",
-        marginBottom: "10px",
-        backgroundColor: "#fff"
-      },
+      radioGroup: "solid",
       value1: 5,
       lineHeight: 1,
-      margin: 10,
       value2: 20,
-      format1(val) {
+      format1 (val) {
         return val + "%";
       },
-      format2(val) {
+      format2 (val) {
         return val + "%";
       },
       showColor1: false,
       colors1: {
-        choseColor1: "#fff",
         hex: "#fff",
         hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
         hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
@@ -103,7 +93,6 @@ export default {
       },
       showColor2: false,
       colors2: {
-        choseColor: "#000",
         hex: "#000",
         hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
         hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
@@ -112,85 +101,110 @@ export default {
       }
     };
   },
-  methods: {
-    // 线条样式
-    changeBor(data) {
-      if (data == "0") {
-        this.styleObject.borderBottomStyle = "solid";
-        this.$store.commit("incrementAuxiliarlineStyleObj", this.styleObject);
-      } else if (data == "1") {
-        this.styleObject.borderBottomStyle = "dashed";
-        this.$store.commit("incrementAuxiliarlineStyleObj", this.styleObject);
-      } else if (data == "2") {
-        this.styleObject.borderBottomStyle = "dotted";
-        this.$store.commit("incrementAuxiliarlineStyleObj", this.styleObject);
+   props: {
+    defaultData: {
+      type: Object,
+      default: {}
+    }
+  },
+   computed: {
+    currentStyle1: function () {
+      return {
+        backgroundColor: this.choseColor1
       }
     },
-    // 线条高度
-    changHeight(data) {
-      this.lineHeight = parseInt(data / 5);
-      this.styleObject.borderBottomWidth = this.lineHeight + "px";
-      this.$store.commit("incrementAuxiliarlineStyleObj", this.styleObject);
+    currentStyle2: function () {
+      return {
+        backgroundColor: this.choseColor2
+      }
     },
-    // 改变上下边距
-    changTopBot(data) {
-      this.margin = parseInt(data / 2);
-      this.styleObject.marginTop = this.margin + "px";
-      this.styleObject.marginBottom = this.margin + "px";
-      this.$store.commit("incrementAuxiliarlineStyleObj", this.styleObject);
+    choseColor1: {
+      get: function () {
+        return this.defaultData.style.background;
+      },
+      set: function (val) {
+        this.defaultData.style.background = val;
+      }
+    },
+    choseColor2: {
+      get: function () {
+        return this.defaultData.style.lineColor;
+      },
+      set: function (val) {
+        this.defaultData.style.lineColor = val;
+      },
+    },
+     value1: {
+      get: function () {
+        return this.defaultData.style.lineHeight / 5;
+      },
+      set: function (val) {
+        this.defaultData.style.lineHeight = val * 5;
+      },
+    },
+     value2: {
+      get: function () {
+        return this.defaultData.style.paddingTop / 2;
+      },
+      set: function (val) {
+        this.defaultData.style.paddingTop = val * 2;
+      },
+    },
+   },
+  methods: {
+    changeStyle (data) {
+      this.$store.commit("incrementCompListItem", {type: 'style',
+        value: {
+          background: this.choseColor1, lineColor: this.choseColor2, paddingTop: this.value2, lineHeight: this.value1, lineStyle: this.radioGroup}      
+          });
+
     },
     // 显示颜色版弹框
-    changeColor1() {
+    changeColor1 () {
       this.showColor1 = true;
     },
     // 颜色版选中颜色
-    updateValue1(data) {
+    updateValue1 (data) {
       this.choseColor1 = data.hex;
     },
     // 确定提交选中颜色
-    sure1() {
-      this.$refs.color1.style.backgroundColor = this.choseColor1;
-      this.styleObject.backgroundColor = this.choseColor1;
-      this.$store.commit("incrementAuxiliarlineStyleObj", this.styleObject);
+    sure1 () {
       this.showColor1 = false;
+      this.changeStyle()
     },
     //关闭颜色版
-    close1() {
+    close1 () {
       this.showColor1 = false;
     },
     // 重置组件颜色
-    resetColor1() {
-      this.$refs.color1.style.backgroundColor = "#fff";
-      this.styleObject.backgroundColor = "#fff";
-      this.$store.commit("incrementAuxiliarlineStyleObj", this.styleObject);
+    resetColor1 () {
+      this.choseColor1 = "#fff";
+      this.changeStyle();
     },
 
     // 显示颜色版弹框
-    changeColor2() {
+    changeColor2 () {
       this.showColor2 = true;
     },
     // 颜色版选中颜色
-    updateValue2(data) {
+    updateValue2 (data) {
       this.choseColor2 = data.hex;
     },
     // 确定提交选中颜色
-    sure2() {
-      this.$refs.color2.style.backgroundColor = this.choseColor2;
-      this.styleObject.borderBottomColor = this.choseColor2;
-      this.$store.commit("incrementAuxiliarlineStyleObj", this.styleObject);
+    sure2 () {
       this.showColor2 = false;
+      this.changeStyle();
     },
     //关闭颜色版
-    close2() {
+    close2 () {
       this.showColor2 = false;
     },
     // 重置组件颜色
-    resetColor2() {
-      this.$refs.color2.style.backgroundColor = "#000";
-      this.styleObject.borderBottomColor = "#000";
-      this.$store.commit("incrementAuxiliarlineStyleObj", this.styleObject);
+    resetColor2 () {
+      this.choseColor1 = "#000";
+      this.changeStyle();
     }
-  }
+  },
 };
 </script>
 <style>

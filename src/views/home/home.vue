@@ -1,118 +1,110 @@
 <template>
-  <div>
-    <div class="home_wrapper d_start">
-      <!-- 左边 -->
-      <menu-left class="home_left" v-show="menuShow" @goto="gopage"></menu-left>
-      <!-- 右边 -->
-      <div class="home_right" >
-        <div class="home_right_top d_btw" ref="top">
-          <div>
-            <i class="iconfont icon-caidan" @click="handleMenu"></i>
-            <i class="iconfont icon-shuaxin shuaxin"></i>
-          </div>
-          <div class="home_right_top_right">
-            <span style="color:#23abf0;">商业版介绍</span>
-            <span>欢迎你, xxx</span>
-            <div style="display:inline-block" @click="loginOut">
-              <i class="iconfont icon-yyexit exit"></i>
-            <span>退出</span>
+  <div class="content">
+    <div class="left-menu">
+      <Menu
+        mode="vertical"
+        :theme="theme1"
+        active-key="0"
+        style="background-color: #20222a;color:#fff"
+        accordion="true"
+      >
+        <div v-for="(item,index) of oneLevelMenu" :key="index">
+          <Submenu :name="item.id" v-if="item.children.length">
+            <template slot="title">{{item.title}}</template>
+            <div v-for="(item1,index1) of item.children" :key="index1">
+              <MenuGroup :title="item1.title" v-if="item1.children.length">
+                <MenuItem
+                  v-for="(item2,index2) of item1.children"
+                  :key="index2"
+                  :name="item2.id"
+                  :to="item2.purl"
+                >&nbsp;&nbsp;&nbsp;&nbsp;{{item2.title}}</MenuItem>
+              </MenuGroup>
+              <MenuItem v-else :key="index1" :name="item1.id" :to="item1.purl">{{item1.title}}</MenuItem>
             </div>
-          </div>
+          </Submenu>
+          <MenuItem :name="item.id" :to="item.purl" v-else>{{item.title}}</MenuItem>
         </div>
-        <div class="box"></div>
-        <div class="home_right_cnt">
-          <router-view />
+      </Menu>
+    </div>
+    <div class="right-content">
+      <div class="right-content-top">
+        <span style="color:#23abf0;">商业版介绍</span>
+        <span>欢迎你, xxx</span>
+        <div style="display:inline-block" @click="loginOut">
+          <i class="iconfont icon-yyexit exit"></i>
+          <span>退出</span>
         </div>
       </div>
+      <router-view />
     </div>
   </div>
 </template>
 
 <script>
-import homeService from '../../service/home/homeService'
+import homeService from "../../service/home/homeService";
+
 export default {
   name: "home",
   data() {
     return {
-      menuShow: true
+      oneLevelMenu: [],
+      theme1: "dark",
+      hackReset: false
     };
   },
   methods: {
-    //显示或隐藏菜单
-    handleMenu() {
-      this.menuShow = !this.menuShow;
-      if (this.menuShow) {
-        this.$refs.top.style.width = "calc(100% - 160px)";
-      } else {
-        this.$refs.top.style.width = "100%";
-      }
-    },
-
-    //菜单路由跳转
-    gopage(val) {
-      this.$router.push(val);
-    },
     //退出登录
-    loginOut(){
-      homeService.loginOut().then(res=>{
-      })
-    }
-  }
+    loginOut() {
+      homeService.loginOut().then(res => {
+
+      });
+    },
+  },
+  created: function() {
+    let _this = this;
+    let parentName = _this.$route.meta.parentsName;
+    homeService.getPowerList({ current: 1, size: 10 }).then(res => {
+      if (res.code === 0) {
+        _this.oneLevelMenu = res.data;
+        _this.hackReset = false;
+        _this.$nextTick(() => {
+          _this.hackReset = true;
+        });
+      }
+    });
+  },
 };
 </script>
 
 <style scoped>
-.home_wrapper {
-  width: 100%;
-  font-size: 18px;
+.content {
+  display: flex;
+  justify-content: center;
+  height: calc(100%);
 }
-.home_left {
-  color: rgba(255, 255, 255, 0.7);
-  box-shadow: 1px 0 2px 0 rgba(0, 0, 0, 0.05);
+.left-menu {
+  width: 240px;
   background-color: #20222a;
-  height: 100vh;
-  overflow: auto;
-
+  -webkit-box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
+  box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
 }
-.home_right {
-  flex: 1;
-  overflow: auto;
-  height: 100vh;
-
+.right-content {
+  width: calc(100% - 240px);
 }
-.home_right .home_right_top {
-  background: #fff;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  position: fixed;
-  top: 0;
-  height: 50px;
-  width: calc(100% - 160px);
-  align-items: center;
-  padding: 0 20px;
-  box-sizing: border-box;
+.right-content-top {
+  text-align: right;
+  font-size: 16px;
+  background-color: #fff;
+  padding: 20px;
 }
-.home_right .home_right_top i {
-  font-size: 22px;
+.right-content-top span {
+  padding: 0px 20px;
 }
-.home_right .home_right_top .shuaxin {
-  font-size: 20px;
-  margin-left: 10px;
-}
-.home_right .home_right_top .exit {
-  font-size: 18px;
-}
-.home_right .home_right_top span {
-  font-size: 14px;
-  margin-right: 30px;
-}
-.box {
-  height: 50px;
-}
-.home_right_cnt{
-  height: calc(100% - 50px);
-}
-
 </style>
+
+
+
 
 
 

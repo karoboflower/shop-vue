@@ -74,7 +74,11 @@ export default {
               .then(res => {
                 if (res.code === 0) {
                   localStorage.setItem('logindata', res.data);
-                  _this.$router.push('/index');
+                  loginService.getUserInfo().then(res=>{
+                       localStorage.setItem('userdata', JSON.stringify(res.data));
+                      _this.$router.push('/index');
+                  })
+                 
 
                 } else {
                   this.$Message.info("登录失败，请重新登录");

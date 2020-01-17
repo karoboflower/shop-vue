@@ -1,4 +1,4 @@
-import window from './window.vue'
+import windowP from './windowP.vue'
 export {
-    window
+    windowP
 }

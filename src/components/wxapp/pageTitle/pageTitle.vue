@@ -4,36 +4,36 @@
       <li class="item d_start">
         <span>页面名称</span>
         <div style="flex:1">
-          <Input v-model="pageName" placeholder="请填写页面名称" />
+          <Input v-model="pageName" placeholder="请填写页面名称" @on-blur="changParams" />
           <p>页面名称仅用于后台查找</p>
         </div>
       </li>
       <li class="item d_start">
         <span>页面标题</span>
         <div style="flex:1">
-          <Input v-model="pageTitle" placeholder="请填写页面标题" @on-blur="changTitle" />
+          <Input v-model="pageTitle" placeholder="请填写页面标题" @on-blur="changParams" />
           <p>小程序端顶部显示的标题</p>
         </div>
       </li>
       <li class="item d_start">
         <span>分享标题</span>
         <div style="flex:1">
-          <Input v-model="shareName" placeholder="请填写分享标题" />
+          <Input v-model="shareName" placeholder="请填写分享标题" @on-blur="changParams" />
           <p>小程序端转发时显示的标题</p>
         </div>
       </li>
 
       <li class="title_point">
         <span>标题颜色</span>
-        <RadioGroup v-model="point" @on-change="changeShape">
-          <Radio label="黑色"></Radio>
-          <Radio label="白色"></Radio>
+        <RadioGroup v-model="titleTextColor" @on-change="changStyle">
+          <Radio label="#000">黑色</Radio>
+          <Radio label="#fff">白色</Radio>
         </RadioGroup>
       </li>
       <li class="color d_start">
         <span>标题栏背景</span>
         <div class="point_color d_around">
-          <span @click="changeColor" class="color_input" ref="color"></span>
+          <span @click="changeColor" class="color_input" :style="currentStyle"></span>
           <span class="color_btn" @click="resetColor">重置</span>
         </div>
       </li>
@@ -54,29 +54,16 @@ import { Photoshop } from "vue-color";
 export default {
   name: "pageTitle",
   props: {
-    title: {
-      type: String,
-      default: ""
-    },
-    titleData:{
-      type:Object,
-      default:{}
+    defaultData: {
+      type: Object,
+      default: {}
     }
   },
   components: {
     "photoshop-picker": Photoshop
   },
-  data() {
+  data () {
     return {
-      pageTitle: "页面标题",
-      pageName: "页面名称",
-      shareName: "分享名称",
-      styleObject: {
-        height: " 15px",
-        width: "15px",
-        borderRadius: "50%",
-        backgroundColor: " #fff"
-      },
       showColor: false,
       colors: {
         hex: "#fff",
@@ -85,66 +72,91 @@ export default {
         rgba: { r: 25, g: 77, b: 51, a: 1 },
         a: 1
       },
-      point: "黑色",
-      choseColor: "#fff"
     };
   },
-  created() {
-    this.pageTitle = this.title;
-    this.pageName=this.titleData.page.params.title;
-    this.shareName=this.titleData.page.params.share_title;
-    // console.log("数据",this.titleData.page.style)
-    this.styleObject.backgroundColor=this.titleData.page.style.titleBackgroundColor
-  },
-  methods: {
-    // 改变页面标题
-    changTitle() {
-      this.$emit("changePageTitle", this.pageTitle);
-    },
-    //显示圆点形状
-    changeShape(data) {
-      if (data == "圆形") {
-        this.styleObject.height = "15px";
-        this.styleObject.width = "15px";
-        this.styleObject.borderRadius = "50%";
-        this.$store.commit("incrementSwiperStyleObj", this.styleObject);
-      } else if (data == "正方形") {
-        this.styleObject.height = "15px";
-        this.styleObject.width = "15px";
-        this.styleObject.borderRadius = "0%";
-        this.$store.commit("incrementSwiperStyleObj", this.styleObject);
-      } else if (data == "长方形") {
-        this.styleObject.height = "5px";
-        this.styleObject.width = "30px";
-        this.styleObject.borderRadius = "0%";
-        this.$store.commit("incrementSwiperStyleObj", this.styleObject);
+  computed: {
+    currentStyle: function () {
+      return {
+        backgroundColor: this.choseColor
       }
     },
+      pageName: {
+      get: function () {
+        return this.defaultData.params.name;
+      },
+      set: function (val) {
+        this.defaultData.params.name = val;
+      }
+    },
+    pageTitle: {
+      get: function () {
+        return this.defaultData.params.title;
+      },
+      set: function (val) {
+        this.defaultData.params.title = val;
+      }
+    },
+  
+    shareName: {
+      get: function () {
+        return this.defaultData.params.share_title;
+      },
+      set: function (val) {
+        this.defaultData.params.share_title = val;
+      }
+    },
+    titleTextColor: {
+      get: function () {
+        return this.defaultData.style.titleTextColor;
+      },
+      set: function (val) {
+        this.defaultData.style.titleTextColor = val;
+      }
+    },
+    choseColor: {
+      get: function () {
+        return this.defaultData.style.titleBackgroundColor;
+      },
+      set: function (val) {
+        this.defaultData.style.titleBackgroundColor = val;
+      }
+    }
+  },
+  methods: {
     // 显示颜色版弹框
-    changeColor() {
+    changeColor () {
       this.showColor = true;
     },
     // 颜色版选中颜色
-    updateValue(data) {
+    updateValue (data) {
       this.choseColor = data.hex;
     },
     // 确定选中颜色
-    sure() {
-      this.$refs.color.style.backgroundColor = this.choseColor;
+    sure () {
       this.showColor = false;
-      this.styleObject.backgroundColor = this.choseColor;
-      this.$store.commit("incrementSwiperStyleObj", this.styleObject);
+      this.changStyle();
     },
     // 重置颜色
-    resetColor() {
-      this.$refs.color.style.backgroundColor = "#fff";
-      this.styleObject.backgroundColor = "#ffff";
-      this.$store.commit("incrementSwiperStyleObj", this.styleObject);
+    resetColor () {
+      this.choseColor = "#fff";
+      this.changStyle();
     },
     //关闭颜色板
-    close() {
+    close () {
       this.showColor = false;
-    }
+    },
+    changStyle (data) {
+      this.$store.commit("incrementPage", {
+        type: 'style',
+        value: { titleTextColor: this.titleTextColor, titleBackgroundColor: this.choseColor }
+      });
+    },
+    changParams (params) {
+      this.$store.commit("incrementPage", {
+        type: 'params',
+        value: { name: this.pageName, title: this.pageTitle, share_title: this.shareName }
+      });
+    },
   }
 };
 </script>

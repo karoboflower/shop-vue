@@ -24,14 +24,20 @@
           </Button>
           <small>尺寸750x750像素以上，大小2M以下 (可拖拽图片调整显示顺序 )</small>
           <br />
+           <vuedraggable
+            :list="formItem.goodsUploadFiles"
+            class="dragArea"
+            :options="{animation: 120, filter: '.drag__nomove' }"
+          >
           <div
             v-for="(item,index) in formItem.goodsUploadFiles"
             :key="item.fileId"
             class="photos-list"
           >
-            <img :src="'/file/show/'+item.fileId" width="120" height="140" />
+            <img :src="item.fileUrl" width="120" height="140" />
             <Icon type="ios-close-circle" @click="deletePhoto(index)" />
           </div>
+           </vuedraggable>
         </FormItem>
         <div class="header">
           <div class="item_title">规格/库存</div>
@@ -113,6 +119,7 @@
 <script>
 import freightService from "../../../service/goods/goodsService"
 import goodsSpec from '@/components/common/goodsSpec'
+import vuedraggable from 'vuedraggable';
 //import E from "@/components/common/wangeditor/wangEditor.js"
 export default {
   name: "goodsAdd",
@@ -210,8 +217,9 @@ export default {
           baseData.goodsSkus = data.goodsSkus;
           baseData.spec_attr = data.goodsSpecs;
           baseData.spec_list = _this.setSpecList(baseData, data.spuId);
-          _this.defaultGoodsSpec = baseData
-        
+          _this.defaultGoodsSpec = baseData;
+          _this.doubleSpecTypes= baseData.goodsSkus;
+          _this.goodsSpecs=data.goodsSpecs;
         } else {
           _this.singlespecTypes = data.goodsSkus[0]
         }
@@ -231,7 +239,8 @@ export default {
           _this.formItem.goodsUploadFiles = []
           for (let i = 0; i < data.length; i++) {
             _this.formItem.goodsUploadFiles.push({
-              fileId: data[i]
+              fileId: data[i].fileId,
+              fileUrl:data[i].fileUrl
             })
           }
 
@@ -256,7 +265,7 @@ export default {
           freightService.updateGoods(params).then(res => {
             if (res.code === 0) {
               setTimeout(function () {
-                _this.$Message.info("添加成功");
+                _this.$Message.info("修改成功");
                 _this.$router.push('goodsList');
               }, 1000)
 
@@ -330,7 +339,7 @@ export default {
       return spec_list;
     }
   },
-  components: {    goodsSpec
+  components: {    goodsSpec,vuedraggable
   }
 };
 </script>

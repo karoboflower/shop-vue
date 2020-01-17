@@ -5,7 +5,7 @@
       <li class="color d_start">
         <span>背景颜色</span>
         <div class="point_color d_around">
-          <span @click="changeColor" class="color_input" ref="color"></span>
+          <span @click="changeColor" class="color_input" :style="currentStyle"></span>
           <span class="color_btn" @click="resetColor">重置</span>
         </div>
       </li>
@@ -20,33 +20,40 @@
       <!-- 每行行数 -->
       <li class="color d_start">
         <span>每行数量</span>
-        <RadioGroup v-model="lineNum" @on-change="chagneFlex">
-          <Radio label="0">3个</Radio>
-          <Radio label="1">4个</Radio>
-          <Radio label="2">5个</Radio>
+        <RadioGroup v-model="rowsNum" @on-change="changeStyle">
+          <Radio label="3">3个</Radio>
+          <Radio label="4">4个</Radio>
+          <Radio label="5">5个</Radio>
         </RadioGroup>
       </li>
 
       <li class="navigation_items">
-        <div class="navigation_item" v-for="(item,index) of data" :key="index">
+        <div class="navigation_item" v-for="(item,index) of imgList" :key="index">
           <div class="img_box d_start">
             <span>图片</span>
             <div>
-              <img :src="item.url" alt />
+              <img :src="item.img?item.img:defaultImgUrl"  @click="changeImg(index)" alt />
               <p>建议尺寸750X360</p>
             </div>
           </div>
           <div class="img_link d_start">
             <span>文字内容</span>
-            <Input type="text" :value="item.name" />
+            <Input type="text" v-model="item.text"  @on-blur="changeData" />
           </div>
           <div class="img_link d_start">
             <span>文字颜色</span>
-            <Input type="text" :value="item.title" />
+            <div class="point_color d_around" >
+              <span
+                @click="changeColor(item,index)"
+                class="color_input"
+                :style="{'backgroundColor':item.color}"
+              ></span>
+              <span class="color_btn" @click="resetColor(item)">重置</span>
+            </div>
           </div>
           <div class="img_link d_start">
             <span>链接地址</span>
-            <Input type="text" :value="item.url" />
+            <Input type="text" v-model="item.linkUrl" @on-blur="changeData" />
           </div>
           <i class="iconfont icon-web-icon- wrong" @click="downImg(index)"></i>
         </div>
@@ -65,114 +72,163 @@ export default {
     "photoshop-picker": Photoshop
   },
   props: {
-    data: {
-      type: Array,
-      default: []
+    defaultData: {
+      type: Object,
+      default: {}
     }
   },
-  data() {
+ 
+  data () {
     return {
-      imgList: [
-        {
-          url: "https://demo.yiovo.com/assets/store/img/diy/banner/01.png",
-          link: ""
-        },
-        {
-          url: "https://demo.yiovo.com/assets/store/img/diy/banner/01.png",
-          link: ""
-        }
-      ],
-      styleObject: {
-        backgroundColor: "#fff",
-        width: "25%",
-        color1: "#000",
-        color2: "#000",
-        color3: "#000",
-        color4: "#000"
-      },
-      lineNum: "1",
+      defaultImgUrl: require("../../../assets/images/defaultImg.png"),
       showColor: false,
+      showColorItem: false,
+      choseColorItem: "#fff",
       colors: {
-        choseColor: "#fff",
         hex: "#fff",
         hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
         hsv: { h: 150, s: 0.66, v: 0.3, a: 1 },
         rgba: { r: 25, g: 77, b: 51, a: 1 },
         a: 1
-      }
+      },
+      currentIndex: -1,
+      isShowModel:false
     };
   },
-  created() {
-    this.data.forEach((item, index) => {
-      var i = index + 1;
-      item.name = item.title + i;
-    });
-  },
-  watch: {
-    data(newVal) {
-      newVal.forEach((item, index) => {
-        var i = index + 1;
-        item.name = item.title + i;
-      });
-      this.data=newVal
-    }
+   computed: {
+    currentStyle: function () {
+      return {
+        backgroundColor: this.choseColor
+      }
+    },
+     choseColor: {
+      get: function () {
+        return this.defaultData.style.background;
+      },
+      set: function (val) {
+        this.defaultData.style.background = val;
+      }
+    },
+    imgList: {
+      get: function () {
+        return this.defaultData.data;
+      },
+      set: function (val) {
+        this.defaultData.data = val;
+      }
+    },
+    rowsNum: {
+      get: function () {
+        return this.defaultData.style.rowsNum;
+      },
+      set: function (val) {
+        this.defaultData.style.rowsNum = val ;
+      }
+    },
   },
   methods: {
-    // 改变每行显示个数
-    chagneFlex(data) {
-      if (data == 0) {
-        this.styleObject.width = "33.3%";
-        this.$store.commit("incrementNavigationStyleObj", this.styleObject);
-      } else if (data == 1) {
-        this.styleObject.width = "25%";
-        this.$store.commit("incrementNavigationStyleObj", this.styleObject);
-      }
-      if (data == 2) {
-        this.styleObject.width = "20%";
-        this.$store.commit("incrementNavigationStyleObj", this.styleObject);
-      }
-    },
+    // changeData (e,index,type) {
+       
+    //   let _data=e.target.value;
+    //   this.imgList[index][type]=_data;
+    //   this.$store.commit("incrementCompListItem", {
+    //     type: 'data',
+    //     value:  JSON.parse(JSON.stringify(this.imgList))
+    //   });
+    // },
     //减少图片
-    downImg(i) {
-      if (this.data.length == 1) {
+     //上传图片
+    changeImg (index) {
+      let _this = this
+      _this.isShowModel = true
+      window.windowphotoGallery.show({
+        isShowModel: _this.isShowModel,
+        onConfirm: function (data) {
+          _this.imgList[index].img = data[0].fileUrl;
+          _this.changeData();
+        }
+      })
+    },
+    downImg (i) {
+      if (this.imgList.length == 1) {
         this.$Message.info("至少保留一个");
       } else {
-        this.data.splice(i, 1);
+        this.imgList.splice(i, 1);
       }
+      this.changeData();
+   
     },
     //添加图片
-    addImg() {
+    addImg () {
       var val = {
-        url: require("../../../assets/images/defaultImg.png"),
-        title: "按钮文字",
-        link: ""
+        "img": '',					//图片id
+        "linkUrl": "",				//跳转链接，用户输入
+        "text": "按钮文字",			//文字描述
+        "color": "#666666"			//文字颜色
       };
-      this.data.push(val);
+      this.imgList.push(val);
+      this.changeData();
     },
     // 显示颜色版弹框
-    changeColor() {
+    changeColor (item, index) {
+      if (index) {
+        this.showColorItem = true
+        this.currentIndex = index;
+      }
       this.showColor = true;
     },
     // 颜色版选中颜色
-    updateValue(data) {
-      this.choseColor = data.hex;
+    updateValue (data) {
+      if (this.showColorItem) {
+        this.choseColorItem = data.hex;
+      } else {
+        this.choseColor = data.hex;
+      }
     },
     // 确定提交选中颜色
-    sure() {
-      this.$refs.color.style.backgroundColor = this.choseColor;
-      this.styleObject.backgroundColor = this.choseColor;
-      this.$store.commit("incrementNavigationStyleObj", this.styleObject);
+    sure () {
       this.showColor = false;
+      if (this.showColorItem) {
+        this.changeData();
+      } else {
+       this.changeStyle();
+      }
+
+
     },
     //关闭颜色版
-    close() {
+    close () {
       this.showColor = false;
     },
     // 重置组件颜色
-    resetColor() {
-      this.$refs.color.style.backgroundColor = "#fff";
-      this.styleObject.backgroundColor = "#ffff";
-      this.$store.commit("incrementNavigationStyleObj", this.styleObject);
+    resetColor (item) {
+      if (item) {
+        item.color = "#666";
+        this.$store.commit("incrementCompListItem", {
+          type: 'data',
+          value: this.imgList
+        });
+      } else {
+        this.choseColor = "#666";
+        this.$store.commit("incrementCompListItem", {
+          type: 'style',
+          value: { background: this.choseColor, rowsNum: this.rowsNum }
+        });
+      }
+
+
+    },
+    changeStyle(){
+ this.$store.commit("incrementCompListItem", {
+        type: 'style',
+        value: { background: this.choseColor, rowsNum: this.rowsNum }
+      });
+    },
+    changeData(){
+   this.$store.commit("incrementCompListItem", {
+        type: 'data',
+        value: this.imgList
+      });
     }
   }
 };
@@ -261,7 +317,6 @@ export default {
   font-size: 12px;
 }
 .navigation_box .navigation_item span {
-  padding-top: 10px;
   width: 70px;
   margin-right: 10px;
   text-align: right;
